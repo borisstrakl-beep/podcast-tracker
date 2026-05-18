@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>Podcast Tracker</title>
+<style>
+:root{
+  --bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ede8;--text2:#8a8680;--text3:#4a4642;
+  --gold:#c8a96e;--gold2:#a07840;
+  --green:#4caf7d;--green-bg:rgba(76,175,125,0.12);
+  --amber:#d4a843;--amber-bg:rgba(212,168,67,0.12);
+  --blue:#5b9bd5;--blue-bg:rgba(91,155,213,0.12);
+  --red:#d45b5b;--red-bg:rgba(212,91,91,0.12);
+  --r:10px;--r-sm:7px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  --serif:Georgia,'Times New Roman',serif;
+  --sidebar-w:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
+input,textarea,select,button{font-family:var(--font);outline:none}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+
+/* ── LAYOUT ── */
+#app{display:flex;height:100vh;height:100dvh;overflow:hidden;position:relative}
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);z-index:50}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  .sidebar{position:fixed;top:0;left:0;height:100%;height:100dvh;transform:translateX(-100%);box-shadow:4px 0 24px rgba(0,0,0,0.5)}
+  .sidebar.open{transform:translateX(0)}
+  .mob-overlay{display:block!important}
+  .mob-menu-btn{display:flex!important}
+  #app{flex-direction:column}
+  .main{width:100%}
+  .main-header{padding:0.75rem 1rem!important}
+  .main-header h2{font-size:16px!important}
+  .hdr-actions{gap:6px!important}
+  .stats-bar .stat{padding:8px 10px!important}
+  .stat-val{font-size:18px!important}
+  .filters-bar{padding:6px 1rem!important;gap:4px!important}
+  .ep-list{padding:0.75rem 1rem!important}
+  .ep-card{padding:12px 13px!important}
+  .modal{width:100%!important;max-width:100%!important;border-radius:20px 20px 0 0!important;position:fixed!important;bottom:0!important;top:auto!important;max-height:92vh!important;max-height:92dvh!important}
+  .modal-overlay{align-items:flex-end!important}
+}
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40;backdrop-filter:blur(2px)}
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;color:var(--text2);font-size:16px;flex-shrink:0}
+
+/* ── SIDEBAR ── */
+.sidebar-top{padding:1rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.brand{font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:4px}
+.model-badge{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);border:1px solid rgba(76,175,125,0.25);border-radius:20px;padding:2px 9px;font-size:10px;color:var(--green);margin-bottom:6px}
+.sync-row{display:flex;align-items:center;gap:6px}
+.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background 0.3s}
+.sync-dot.ok{background:var(--green)}.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite}.sync-dot.err,.sync-dot.offline{background:var(--text3)}
+.sync-lbl{font-size:11px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync-btn{font-size:12px;color:var(--gold);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;flex-shrink:0}
+.pod-search{padding:6px 8px;border-bottom:1px solid var(--border);flex-shrink:0}
+.pod-search input{width:100%;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:12px}
+.pod-search input::placeholder{color:var(--text3)}
+.lang-bar{display:flex;gap:4px;padding:5px 8px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
+.lang-chip{padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border);color:var(--text3);cursor:pointer;background:transparent;transition:0.12s}
+.lang-chip.active{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.pod-list{flex:1;overflow-y:auto;padding:6px}
+.pod-item{padding:9px 10px;border-radius:var(--r-sm);cursor:pointer;margin-bottom:2px;border:1px solid transparent;display:flex;align-items:center;gap:8px;transition:0.12s}
+.pod-item:hover,.pod-item.active{background:var(--bg3);border-color:var(--border2)}
+.pod-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pod-info{flex:1;min-width:0}
+.pod-name{font-size:12px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod-sub{font-size:10px;color:var(--text3)}
+.pod-prog{height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-top:4px;overflow:hidden}
+.pod-prog-bar{height:100%;background:var(--green);border-radius:1px;transition:width 0.3s}
+.pod-count{font-size:10px;color:var(--text3);background:var(--bg4);padding:1px 6px;border-radius:10px;flex-shrink:0}
+.add-pod-btn{margin:6px 10px 10px;padding:8px;border-radius:var(--r-sm);border:1px dashed var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;width:calc(100% - 20px);transition:0.12s}
+.add-pod-btn:hover{color:var(--text);border-color:var(--gold)}
+
+/* ── MAIN ── */
+.main-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.main-header h2{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hdr-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.hdr-btn{padding:6px 12px;border-radius:var(--r-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:0.12s}
+.hdr-btn:hover{background:var(--bg3);color:var(--text)}
+.hdr-btn.gold{color:var(--gold);border-color:rgba(200,169,110,0.3)}
+.hdr-btn.gold:hover{background:rgba(200,169,110,0.08)}
+.hdr-btn:disabled{opacity:0.45;cursor:not-allowed}
+.stats-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.stat{flex:1;padding:10px 14px;border-right:1px solid var(--border)}
+.stat:last-child{border-right:none}
+.stat-val{font-size:20px;font-weight:500;color:var(--text)}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:1px}
+.filters-bar{display:flex;gap:5px;padding:8px 1.5rem;border-bottom:1px solid var(--border);align-items:center;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.filters-bar::-webkit-scrollbar{display:none}
+.f-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text3);cursor:pointer;white-space:nowrap;transition:0.12s;flex-shrink:0}
+.f-btn.active{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.ep-search{margin-left:auto;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:11px;width:140px;flex-shrink:0}
+.ep-search::placeholder{color:var(--text3)}
+.ep-list{flex:1;overflow-y:auto;padding:1rem 1.5rem;-webkit-overflow-scrolling:touch}
+.ep-card{border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-bottom:10px;cursor:pointer;background:var(--bg);transition:0.12s;-webkit-user-select:none;user-select:none}
+.ep-card:active{background:var(--bg2)}
+.ep-card.listened{border-left:3px solid var(--green)}
+.ep-card.studying{border-left:3px solid var(--amber)}
+.ep-card.queued{border-left:3px solid var(--blue)}
+.ep-top{display:flex;gap:8px;margin-bottom:7px}
+.ep-title{font-size:13px;font-weight:500;color:var(--text);line-height:1.4;flex:1}
+.ep-meta{font-size:11px;color:var(--text3);white-space:nowrap;flex-shrink:0}
+.ep-summary{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:9px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ep-foot{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tag{padding:2px 7px;border-radius:10px;font-size:10px}
+.tag-gray{background:var(--bg3);color:var(--text3)}
+.tag-blue{background:var(--blue-bg);color:var(--blue)}
+.tag-amber{background:var(--amber-bg);color:var(--amber)}
+.tag-green{background:var(--green-bg);color:var(--green)}
+.st-pill{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500}
+.empty{text-align:center;padding:4rem 2rem;color:var(--text3);font-size:13px;line-height:1.7}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;color:var(--text3)}
+.welcome-num{font-family:var(--serif);font-size:72px;color:var(--gold);opacity:0.25;line-height:1}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem;backdrop-filter:blur(4px)}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:540px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-head{padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;flex-shrink:0}
+.modal-head-info{flex:1;min-width:0}
+.modal-meta{font-size:11px;color:var(--text3);margin-bottom:4px}
+.modal-title{font-family:var(--serif);font-size:16px;color:var(--text);line-height:1.4}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px;flex-shrink:0}
+.modal-body{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;-webkit-overflow-scrolling:touch}
+.modal-actions{display:flex;gap:6px;padding:1rem 1.5rem;border-top:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.ai-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px;margin-bottom:10px}
+.ai-box-head{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.ai-box-head .gold{color:var(--gold)}
+.ai-box-text{font-size:13px;color:var(--text2);line-height:1.65}
+.tip-box{background:var(--blue-bg);border:1px solid rgba(91,155,213,0.2);border-radius:var(--r-sm);padding:13px;margin-bottom:12px}
+.tip-box .ai-box-head{color:var(--blue)}
+.field{margin-bottom:12px}
+.field label{font-size:11px;color:var(--text3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em}
+.field input,.field textarea,.field select{width:100%;padding:9px 11px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-size:14px;transition:0.12s;-webkit-appearance:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold)}
+.field textarea{height:88px;resize:vertical;line-height:1.5}
+.sep{height:1px;background:var(--border);margin:14px 0}
+.stars{display:flex;gap:4px}
+.star{font-size:24px;cursor:pointer;color:var(--text3);-webkit-user-select:none;user-select:none}
+.star.on{color:var(--amber)}
+.err-box{background:var(--red-bg);border:1px solid rgba(212,91,91,0.2);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--red);margin-bottom:12px}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 14px;border-radius:var(--r-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:0.12s;white-space:nowrap}
+.btn:hover{background:var(--bg3);color:var(--text)}
+.btn.primary{background:var(--gold);color:#1a1200;border-color:var(--gold);font-weight:700}
+.btn.primary:hover{background:var(--gold2);color:var(--text)}
+.btn.danger{color:var(--red);border-color:rgba(212,91,91,0.2)}
+.btn.danger:hover{background:var(--red-bg)}
+.btn.ai{color:var(--gold);border-color:rgba(200,169,110,0.3)}
+.btn.ai:hover{background:rgba(200,169,110,0.08)}
+.btn:disabled{opacity:0.45;cursor:not-allowed}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid rgba(200,169,110,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite}
+
+/* ── AUTH ── */
+#auth{display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:1.5rem;background:var(--bg)}
+.auth-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:2rem;max-width:460px;width:100%;text-align:center}
+.auth-card h1{font-family:var(--serif);font-size:24px;font-weight:400;color:var(--gold);margin-bottom:6px}
+.auth-card p{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:1.25rem}
+.auth-steps{text-align:left;background:var(--bg3);border-radius:var(--r-sm);padding:1rem;margin-bottom:1.25rem;font-size:13px;color:var(--text2);line-height:2}
+.auth-steps a{color:var(--gold)}
+.auth-steps code{background:var(--bg4);padding:1px 5px;border-radius:3px;color:var(--gold);font-size:11px}
+.auth-input{width:100%;padding:10px 13px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-size:14px;margin-bottom:10px;-webkit-appearance:none}
+.auth-input:focus{border-color:var(--gold)}
+.auth-btn{width:100%;padding:12px;background:var(--gold);border:none;border-radius:var(--r-sm);color:#1a1200;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.auth-skip{width:100%;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text2);font-size:13px;cursor:pointer}
+
+/* ── ANIMS ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="auth-card">
+    <div style="font-size:32px;margin-bottom:8px">🎙</div>
+    <h1>Podcast Tracker</h1>
+    <div class="model-badge" style="display:inline-flex;margin-bottom:12px">✦ Haiku · optimizirani stroški</div>
+    <p>Vnesi Google Drive access token za shranjevanje podatkov v oblak.</p>
+    <div class="auth-steps">
+      <div>1. Odpri <a href="https://developers.google.com/oauthplayground" target="_blank">Google OAuth Playground</a></div>
+      <div>2. Scope: <code>googleapis.com/auth/drive.file</code> → Authorize APIs</div>
+      <div>3. Klikni <strong style="color:var(--text)">Exchange authorization code for tokens</strong></div>
+      <div>4. Kopiraj <strong style="color:var(--text)">Access token</strong> → prilepi spodaj</div>
+    </div>
+    <input class="auth-input" id="tokenInput" type="text" placeholder="ya29.a0..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="auth-btn" onclick="doLogin()">Poveži z Google Drive</button>
+    <button class="auth-skip" onclick="doSkip()">Nadaljuj brez Drive (lokalno)</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <!-- Mobile overlay -->
+  <div class="mob-overlay" id="mobOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">🎙 Podcast Tracker</div>
+      <div class="model-badge">✦ Haiku · optimizirani stroški</div>
+      <div class="sync-row">
+        <div class="sync-dot" id="syncDot"></div>
+        <span class="sync-lbl" id="syncLbl">Lokalno</span>
+        <button class="sync-btn" id="syncBtn" onclick="doSync()" style="display:none">↻</button>
+      </div>
+    </div>
+    <div class="pod-search">
+      <input type="search" placeholder="Iskanje podcastov..." id="podSearch" oninput="renderSidebar()" autocorrect="off">
+    </div>
+    <div class="lang-bar" id="langBar"></div>
+    <div class="pod-list" id="podList"></div>
+    <button class="add-pod-btn" onclick="openAddPodcast()">+ Dodaj podcast</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="mainPane">
+    <div class="welcome" id="welcome">
+      <div class="welcome-num" id="welcomeNum">0</div>
+      <p style="margin-top:1rem;max-width:260px;line-height:1.7;font-size:14px">podcastov v tvoji knjižnici.<br>Izberi podcast iz menija.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ROOT -->
+<div id="modalRoot"></div>
+
+<script>
+const MODEL='claude-haiku-4-5-20251001';
+const STORE='pt_v3';
+
+const PODCASTS=[
+  {id:'p001',name:'10% Happier',lang:'EN',color:'#4caf7d'},{id:'p002',name:'11 Leben',lang:'DE',color:'#5b9bd5'},
+  {id:'p003',name:'45 minut z Nejcem Vidmarjem',lang:'SL',color:'#c8a96e'},{id:'p004',name:'A Bit of Optimism',lang:'EN',color:'#4caf7d'},
+  {id:'p005',name:'Aidea',lang:'IT',color:'#d4a843'},{id:'p006',name:'Alternative History',lang:'EN',color:'#4caf7d'},
+  {id:'p007',name:'All the Hacks',lang:'EN',color:'#4caf7d'},{id:'p008',name:'Anno Mundi',lang:'SL',color:'#c8a96e'},
+  {id:'p009',name:'Ars Humana',lang:'SL',color:'#c8a96e'},{id:'p010',name:'Arsovo domače branje',lang:'SL',color:'#c8a96e'},
+  {id:'p011',name:'Atmosferci',lang:'SL',color:'#c8a96e'},{id:'p012',name:'Auf & Up',lang:'DE',color:'#5b9bd5'},
+  {id:'p013',name:'Ball you need is love',lang:'DE',color:'#5b9bd5'},{id:'p014',name:'ballersterer podcast',lang:'DE',color:'#5b9bd5'},
+  {id:'p015',name:'Besser leben',lang:'DE',color:'#5b9bd5'},{id:'p016',name:'Brstologija',lang:'SL',color:'#c8a96e'},
+  {id:'p017',name:'Business punk',lang:'DE',color:'#5b9bd5'},{id:'p018',name:'Beyond Business Cast',lang:'DE',color:'#5b9bd5'},
+  {id:'p019',name:'Pika na i',lang:'SL',color:'#c8a96e'},{id:'p020',name:'Changemakers',lang:'EN',color:'#4caf7d'},
+  {id:'p021',name:'Coffee Break Italian',lang:'IT',color:'#d4a843'},{id:'p022',name:'Common Sense',lang:'EN',color:'#4caf7d'},
+  {id:'p023',name:'Hardcore History',lang:'EN',color:'#4caf7d'},{id:'p024',name:'Das Wissen',lang:'DE',color:'#5b9bd5'},
+  {id:'p025',name:'David Senra (Founders)',lang:'EN',color:'#4caf7d'},{id:'p026',name:'DBZ',lang:'SL',color:'#c8a96e'},
+  {id:'p027',name:'Dein Bauprojekt',lang:'DE',color:'#5b9bd5'},{id:'p028',name:'Design Thinking Podcast',lang:'DE',color:'#5b9bd5'},
+  {id:'p029',name:'Die Deutschen Podcast',lang:'DE',color:'#5b9bd5'},{id:'p030',name:'Die Geschichte Österreichs',lang:'DE',color:'#5b9bd5'},
+  {id:'p031',name:'DLF Doku',lang:'DE',color:'#5b9bd5'},{id:'p032',name:'Doj se prosi',lang:'SL',color:'#c8a96e'},
+  {id:'p033',name:"Driver's Seat",lang:'EN',color:'#4caf7d'},{id:'p034',name:'Dvokorak',lang:'SL',color:'#c8a96e'},
+  {id:'p035',name:'Eine Stunde History',lang:'DE',color:'#5b9bd5'},{id:'p036',name:'Einfach mal Luppen',lang:'DE',color:'#5b9bd5'},
+  {id:'p037',name:'Erklär mit die Welt',lang:'DE',color:'#5b9bd5'},{id:'p038',name:'Evolucija užitka',lang:'SL',color:'#c8a96e'},
+  {id:'p039',name:'Fall of Civilisation',lang:'EN',color:'#4caf7d'},{id:'p040',name:'Fejmiči',lang:'SL',color:'#c8a96e'},
+  {id:'p041',name:'Football Finance',lang:'EN',color:'#4caf7d'},{id:'p042',name:'Founders',lang:'EN',color:'#4caf7d'},
+  {id:'p043',name:'Frekvenca X',lang:'SL',color:'#c8a96e'},{id:'p044',name:'Form Done to Dare',lang:'EN',color:'#4caf7d'},
+  {id:'p045',name:'Gemba Podcast',lang:'DE',color:'#5b9bd5'},{id:'p046',name:'Geschichte Europas',lang:'DE',color:'#5b9bd5'},
+  {id:'p047',name:'Geschichten aus der Geschichte',lang:'DE',color:'#5b9bd5'},{id:'p048',name:'Glasovi svetov',lang:'SL',color:'#c8a96e'},
+  {id:'p049',name:'Glave',lang:'SL',color:'#c8a96e'},{id:'p050',name:'Goran',lang:'SL',color:'#c8a96e'},
+  {id:'p051',name:'Viertelstunde Fussball',lang:'DE',color:'#5b9bd5'},{id:'p052',name:'Hidden Brain',lang:'EN',color:'#4caf7d'},
+  {id:'p053',name:'Hiša',lang:'SL',color:'#c8a96e'},{id:'p054',name:'HSV 83',lang:'DE',color:'#5b9bd5'},
+  {id:'p055',name:'Huberman Lab',lang:'EN',color:'#4caf7d'},{id:'p056',name:'Individuum Podcast',lang:'DE',color:'#5b9bd5'},
+  {id:'p057',name:'Innovation Alchemist',lang:'DE',color:'#5b9bd5'},{id:'p058',name:'Inside Austria',lang:'DE',color:'#5b9bd5'},
+  {id:'p059',name:'Jocko Podcast',lang:'EN',color:'#4caf7d'},{id:'p060',name:'Julian Nagelsmann',lang:'DE',color:'#5b9bd5'},
+  {id:'p061',name:'Lauschangriff',lang:'DE',color:'#5b9bd5'},{id:'p062',name:'Lex Fridman Podcast',lang:'EN',color:'#4caf7d'},
+  {id:'p063',name:'Listen Lisec',lang:'DE',color:'#5b9bd5'},{id:'p064',name:'Meditation Coaching & Life',lang:'DE',color:'#5b9bd5'},
+  {id:'p065',name:'Menschenjagd',lang:'DE',color:'#5b9bd5'},{id:'p066',name:'Metropolitan',lang:'SL',color:'#c8a96e'},
+  {id:'p067',name:'Mihilizem',lang:'SL',color:'#c8a96e'},{id:'p068',name:'Mind the Game',lang:'EN',color:'#4caf7d'},
+  {id:'p069',name:'Modern Wisdom',lang:'EN',color:'#4caf7d'},{id:'p070',name:'Money-How',lang:'DE',color:'#5b9bd5'},
+  {id:'p071',name:'Naval',lang:'EN',color:'#4caf7d'},{id:'p072',name:'Nedeljski gost',lang:'SL',color:'#c8a96e'},
+  {id:'p073',name:'Neues Lernen',lang:'DE',color:'#5b9bd5'},{id:'p074',name:'O.B.O.D.',lang:'SL',color:'#c8a96e'},
+  {id:'p075',name:'Ö1 Betrifft: Geschichte',lang:'DE',color:'#5b9bd5'},{id:'p076',name:'Od bita do bita',lang:'SL',color:'#c8a96e'},
+  {id:'p077',name:'OMR Podcast',lang:'DE',color:'#5b9bd5'},{id:'p078',name:'On Purpose',lang:'EN',color:'#4caf7d'},
+  {id:'p079',name:'Opazovalnica',lang:'SL',color:'#c8a96e'},{id:'p080',name:'Osebno z Mihom Mazzinijem',lang:'SL',color:'#c8a96e'},
+  {id:'p081',name:'Phrasenmäher',lang:'DE',color:'#5b9bd5'},{id:'p082',name:'Ozadja',lang:'SL',color:'#c8a96e'},
+  {id:'p083',name:'Österreich die ganze Geschichte',lang:'DE',color:'#5b9bd5'},{id:'p084',name:'Plus Ultra',lang:'DE',color:'#5b9bd5'},
+  {id:'p085',name:'Pod črto',lang:'SL',color:'#c8a96e'},{id:'p086',name:'Positiv führen',lang:'DE',color:'#5b9bd5'},
+  {id:'p087',name:'Poslovne krivulje',lang:'SL',color:'#c8a96e'},{id:'p088',name:'Poslovni nasveti',lang:'SL',color:'#c8a96e'},
+  {id:'p089',name:'Rasenball',lang:'DE',color:'#5b9bd5'},{id:'p090',name:'Real Dictators',lang:'EN',color:'#4caf7d'},
+  {id:'p091',name:'ReThinking',lang:'EN',color:'#4caf7d'},{id:'p092',name:'Rožnata dolina',lang:'SL',color:'#c8a96e'},
+  {id:'p093',name:'Mesüt Özil Podcast',lang:'DE',color:'#5b9bd5'},{id:'p094',name:'Serienreif',lang:'DE',color:'#5b9bd5'},
+  {id:'p095',name:'Servus Gruezi Hallo',lang:'DE',color:'#5b9bd5'},{id:'p096',name:'Sky90',lang:'DE',color:'#5b9bd5'},
+  {id:'p097',name:'Sladko kisli svet',lang:'SL',color:'#c8a96e'},{id:'p098',name:'Sledi časa',lang:'SL',color:'#c8a96e'},
+  {id:'p099',name:'Slo Mo',lang:'EN',color:'#4caf7d'},{id:'p100',name:'Smarter Leben',lang:'DE',color:'#5b9bd5'},
+  {id:'p101',name:'Spiegel Geschichte',lang:'DE',color:'#5b9bd5'},{id:'p102',name:'Spielmacher',lang:'DE',color:'#5b9bd5'},
+  {id:'p103',name:'Spotkast',lang:'SL',color:'#c8a96e'},{id:'p104',name:'Srce bije za posel',lang:'SL',color:'#c8a96e'},
+  {id:'p105',name:'Streamgestöber',lang:'DE',color:'#5b9bd5'},{id:'p106',name:'Številke',lang:'SL',color:'#c8a96e'},
+  {id:'p107',name:'Tatort Geschichte',lang:'DE',color:'#5b9bd5'},{id:'p108',name:'TED Business',lang:'EN',color:'#4caf7d'},
+  {id:'p109',name:'Tehnična podpora',lang:'SL',color:'#c8a96e'},{id:'p110',name:'The Ancients',lang:'EN',color:'#4caf7d'},
+  {id:'p111',name:'The Athletic FC',lang:'EN',color:'#4caf7d'},{id:'p112',name:'Darius Foroux Show',lang:'EN',color:'#4caf7d'},
+  {id:'p113',name:'The Diary of a CEO',lang:'EN',color:'#4caf7d'},{id:'p114',name:'Mel Robbins Podcast',lang:'EN',color:'#4caf7d'},
+  {id:'p115',name:'The Mindset Mentor',lang:'EN',color:'#4caf7d'},{id:'p116',name:'The Peter Attia Drive',lang:'EN',color:'#4caf7d'},
+  {id:'p117',name:'The Rest is History',lang:'EN',color:'#4caf7d'},{id:'p118',name:'The Tim Ferriss Show',lang:'EN',color:'#4caf7d'},
+  {id:'p119',name:'Tony Robbins Channel',lang:'EN',color:'#4caf7d'},{id:'p120',name:'The Ultimate Human',lang:'EN',color:'#4caf7d'},
+  {id:'p121',name:'Think Twice',lang:'DE',color:'#5b9bd5'},{id:'p122',name:'Touchdown & Tacheles',lang:'DE',color:'#5b9bd5'},
+  {id:'p123',name:'Tour 202',lang:'DE',color:'#5b9bd5'},{id:'p124',name:'Trained',lang:'EN',color:'#4caf7d'},
+  {id:'p125',name:'Umetnost lenarjenja',lang:'SL',color:'#c8a96e'},{id:'p126',name:'Und was machst du',lang:'DE',color:'#5b9bd5'},
+  {id:'p127',name:'Underdog podcast',lang:'SL',color:'#c8a96e'},{id:'p128',name:'Verbrechen',lang:'DE',color:'#5b9bd5'},
+  {id:'p129',name:'Vordenker',lang:'DE',color:'#5b9bd5'},{id:'p130',name:'Was bisher geschah',lang:'DE',color:'#5b9bd5'},
+  {id:'p131',name:'Zeitzeichen',lang:'DE',color:'#5b9bd5'},{id:'p132',name:'Wegen guter Führung',lang:'DE',color:'#5b9bd5'},
+  {id:'p133',name:'Zagret za tek',lang:'SL',color:'#c8a96e'},{id:'p134',name:'WW2 Pod',lang:'EN',color:'#4caf7d'},
+  {id:'p135',name:'Zeit Geschichte',lang:'DE',color:'#5b9bd5'},{id:'p136',name:'Zeit Wissen',lang:'DE',color:'#5b9bd5'},
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let S={token:null,driveFileId:null,podcasts:[...PODCASTS],episodes:{},activePod:null,filter:'all',lang:'ALL',fetching:null};
+
+function ls(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch(e){return{}}}
+function ss(){try{localStorage.setItem(STORE,JSON.stringify({token:S.token,driveFileId:S.driveFileId,podcasts:S.podcasts,episodes:S.episodes}))}catch(e){}}
+
+async function claude(prompt){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+  const d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  return d.content.filter(c=>c.type==='text').map(c=>c.text).join('');
+}
+
+async function driveSave(){
+  if(!S.token)return;
+  setSyncState('syncing','Shranjujem...');
+  const body=JSON.stringify({podcasts:S.podcasts,episodes:S.episodes});
+  try{
+    if(S.driveFileId){
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${S.driveFileId}?uploadType=media`,{method:'PATCH',headers:{'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'},body});
+    } else {
+      const m=await fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'},body:JSON.stringify({name:'podcast_tracker_data.json',mimeType:'application/json'})});
+      const mj=await m.json();
+      S.driveFileId=mj.id;
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${S.driveFileId}?uploadType=media`,{method:'PATCH',headers:{'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'},body});
+    }
+    ss();setSyncState('ok','Drive ✓ '+new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e){setSyncState('err','Napaka — token potekel?');}
+}
+
+async function driveLoad(){
+  if(!S.token)return;
+  setSyncState('syncing','Nalagam...');
+  try{
+    const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=name='podcast_tracker_data.json'&fields=files(id)`,{headers:{'Authorization':`Bearer ${S.token}`}});
+    const j=await r.json();
+    if(j.files&&j.files.length){
+      S.driveFileId=j.files[0].id;
+      const fr=await fetch(`https://www.googleapis.com/drive/v3/files/${S.driveFileId}?alt=media`,{headers:{'Authorization':`Bearer ${S.token}`}});
+      const d=await fr.json();
+      if(d.podcasts){const m=[...d.podcasts];PODCASTS.forEach(p=>{if(!m.find(x=>x.id===p.id))m.push(p);});S.podcasts=m;}
+      if(d.episodes)S.episodes=d.episodes;
+      ss();
+    }
+    setSyncState('ok','Drive ✓');
+  } catch(e){setSyncState('err','Napaka nalaganja');}
+}
+
+function setSyncState(state,label){
+  const dot=document.getElementById('syncDot');
+  const lbl=document.getElementById('syncLbl');
+  if(dot)dot.className='sync-dot '+state;
+  if(lbl)lbl.textContent=label;
+}
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+function doLogin(){
+  const t=document.getElementById('tokenInput').value.trim();
+  if(!t){alert('Vnesi token.');return;}
+  S.token=t;
+  bootApp();
+  driveLoad().then(()=>{renderAll();});
+}
+function doSkip(){bootApp();renderAll();}
+function bootApp(){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='flex';
+  if(S.token){document.getElementById('syncBtn').style.display='';setSyncState('ok','Drive');}
+  else setSyncState('offline','Lokalno');
+}
+
+// ── BOOT ───────────────────────────────────────────────────────────────────
+(function(){
+  const d=ls();
+  if(d.token)S.token=d.token;
+  if(d.driveFileId)S.driveFileId=d.driveFileId;
+  if(d.podcasts){const m=[...d.podcasts];PODCASTS.forEach(p=>{if(!m.find(x=>x.id===p.id))m.push(p);});S.podcasts=m;}
+  if(d.episodes)S.episodes=d.episodes;
+  if(S.token){bootApp();driveLoad().then(()=>renderAll());}
+})();
+
+async function doSync(){await driveSave();}
+
+// ── MOBILE SIDEBAR ─────────────────────────────────────────────────────────
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('mobOverlay').style.display='block';}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobOverlay').style.display='none';}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+const LANGS=['ALL','SL','EN','DE','IT'];
+const LLAB={ALL:'Vsi',SL:'🇸🇮',EN:'🇺🇸',DE:'🇩🇪',IT:'🇮🇹'};
+
+function renderAll(){renderSidebar();renderLang();if(S.activePod)renderMain();}
+
+function renderLang(){
+  document.getElementById('langBar').innerHTML=LANGS.map(l=>`<button class="lang-chip ${S.lang===l?'active':''}" onclick="setLang('${l}')">${LLAB[l]} ${l!=='ALL'?l:''}</button>`).join('');
+}
+function setLang(l){S.lang=l;renderLang();renderSidebar();}
+
+function renderSidebar(){
+  const q=(document.getElementById('podSearch')||{}).value||'';
+  const pods=S.podcasts.filter(p=>(S.lang==='ALL'||p.lang===S.lang)&&(!q||p.name.toLowerCase().includes(q.toLowerCase())));
+  document.getElementById('podList').innerHTML=pods.map(p=>{
+    const eps=S.episodes[p.id]||[];
+    const listened=eps.filter(e=>e.status==='listened').length;
+    const pct=eps.length?Math.round(listened/eps.length*100):0;
+    return `<div class="pod-item ${S.activePod===p.id?'active':''}" onclick="selectPod('${p.id}')">
+      <div class="pod-dot" style="background:${p.color}"></div>
+      <div class="pod-info">
+        <div class="pod-name">${p.name}</div>
+        <div class="pod-sub">${p.lang}${eps.length?` · ${listened}/${eps.length}`:''}</div>
+        ${eps.length?`<div class="pod-prog"><div class="pod-prog-bar" style="width:${pct}%"></div></div>`:''}
+      </div>
+      ${eps.length?`<span class="pod-count">${eps.length}</span>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('welcomeNum').textContent=S.podcasts.length;
+}
+
+function selectPod(id){
+  S.activePod=id;S.filter='all';
+  renderSidebar();renderMain();
+  closeSidebar();
+}
+
+const fmtD=d=>{try{return new Date(d).toLocaleDateString('sl-SI',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d||''}};
+const STLBL={new:'Novo',queued:'V vrsti',studying:'Preučujem',listened:'Poslušano'};
+const STCOL={new:'#4a4642',queued:'#5b9bd5',studying:'#d4a843',listened:'#4caf7d'};
+const STBG={new:'rgba(74,70,66,0.15)',queued:'rgba(91,155,213,0.12)',studying:'rgba(212,168,67,0.12)',listened:'rgba(76,175,125,0.12)'};
+
+function renderMain(){
+  const pod=S.podcasts.find(p=>p.id===S.activePod);
+  if(!pod)return;
+  const allEps=S.episodes[S.activePod]||[];
+  const epSearch=(document.getElementById('epSearch')||{}).value||'';
+  const filtEps=allEps.filter(ep=>{
+    const mf=S.filter==='all'||(S.filter==='new'&&(!ep.status||ep.status==='new'))||ep.status===S.filter;
+    return mf&&(!epSearch||ep.title.toLowerCase().includes(epSearch.toLowerCase()));
+  });
+  const isMob=window.innerWidth<=700;
+
+  document.getElementById('mainPane').innerHTML=`
+    <div class="main-header">
+      ${isMob?`<button class="mob-menu-btn" onclick="openSidebar()">☰</button>`:''}
+      <h2>${pod.name}</h2>
+      <div class="hdr-actions">
+        <button class="hdr-btn" onclick="openAddEpisode()">+ Ročno</button>
+        <button class="hdr-btn gold" id="fetchBtn" onclick="fetchEps('${pod.id}')" ${S.fetching===pod.id?'disabled':''}>
+          ${S.fetching===pod.id?'<span class="spinner"></span> Nalagam...':'✦ Naloži'}
+        </button>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-val">${allEps.length}</div><div class="stat-lbl">Skupaj</div></div>
+      <div class="stat"><div class="stat-val">${allEps.filter(e=>e.status==='listened').length}</div><div class="stat-lbl">Poslušano</div></div>
+      <div class="stat"><div class="stat-val">${allEps.filter(e=>e.status==='studying').length}</div><div class="stat-lbl">Preučujem</div></div>
+      <div class="stat"><div class="stat-val">${allEps.filter(e=>e.status==='queued').length}</div><div class="stat-lbl">V vrsti</div></div>
+    </div>
+    <div class="filters-bar">
+      ${['all','new','queued','studying','listened'].map(f=>`<button class="f-btn ${S.filter===f?'active':''}" onclick="setFilter('${f}')">${{all:'Vse',new:'Novo',queued:'V vrsti',studying:'Preučujem',listened:'Poslušano'}[f]}</button>`).join('')}
+      <input class="ep-search" id="epSearch" placeholder="Išči..." oninput="renderMain()" autocorrect="off">
+    </div>
+    <div class="ep-list">
+      ${filtEps.length===0
+        ? `<div class="empty">${allEps.length===0?'Klikni <strong>✦ Naloži</strong> za AI epizode<br>ali <strong>+ Ročno</strong> za ročni vnos.':'Ni epizod za ta filter.'}</div>`
+        : filtEps.map(ep=>{
+            const st=ep.status||'new';
+            return `<div class="ep-card ${st==='listened'?'listened':st==='studying'?'studying':st==='queued'?'queued':''}" onclick="openEpisode('${ep.id}','${S.activePod}')">
+              <div class="ep-top">
+                <div class="ep-title">${ep.title}</div>
+                <div class="ep-meta">${fmtD(ep.date)}${ep.duration?' · '+ep.duration:''}</div>
+              </div>
+              ${ep.summary?`<div class="ep-summary">${ep.summary}</div>`:`<div class="ep-summary" style="color:var(--text3);font-style:italic">Klikni za AI analizo...</div>`}
+              <div class="ep-foot">
+                ${(ep.tags||[]).slice(0,3).map(t=>`<span class="tag tag-gray">${t}</span>`).join('')}
+                ${(ep.userTags||[]).map(t=>`<span class="tag tag-blue">${t}</span>`).join('')}
+                ${ep.userNote?`<span class="tag tag-amber">📝</span>`:''}
+                ${ep.rating>0?`<span style="font-size:11px;color:var(--amber)">${'★'.repeat(ep.rating)}</span>`:''}
+                ${ep.listenedDate?`<span class="tag tag-green">✓ ${fmtD(ep.listenedDate)}</span>`:''}
+                <span class="st-pill" style="background:${STBG[st]};color:${STCOL[st]}">${STLBL[st]}</span>
+              </div>
+            </div>`;
+          }).join('')
+      }
+    </div>`;
+}
+
+function setFilter(f){S.filter=f;renderMain();}
+
+// ── FETCH EPISODES ──────────────────────────────────────────────────────────
+async function fetchEps(podId){
+  const pod=S.podcasts.find(p=>p.id===podId);if(!pod)return;
+  S.fetching=podId;renderMain();
+  try{
+    const txt=await claude(`Ustvari 8 realističnih epizod podcasta "${pod.name}" (${pod.lang}).
+Vrni SAMO JSON array brez \`\`\`json:
+[{"id":"x","title":"Naslov epizode","date":"YYYY-MM-DD","summary":"Kratek povzetek v slovenščini","tip":"Praktičen nasvet v slovenščini","tags":["tag1","tag2"],"duration":"Xh Ym","status":"new","insights":[],"rating":0,"userNote":"","userTags":[],"listenedDate":""}]
+Vrni točno 8 epizod.`);
+    const newEps=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    const ts=Date.now();
+    if(!S.episodes[podId])S.episodes[podId]=[];
+    S.episodes[podId]=[...S.episodes[podId],...newEps.map((e,i)=>({...e,id:`${podId}-${ts}-${i}`}))];
+    ss();driveSave();
+  } catch(e){alert('Napaka: '+e.message);}
+  S.fetching=null;renderMain();renderSidebar();
+}
+
+// ── EPISODE MODAL ───────────────────────────────────────────────────────────
+function openEpisode(epId,podId){
+  const eps=S.episodes[podId]||[];
+  const ep=eps.find(e=>e.id===epId);
+  const pod=S.podcasts.find(p=>p.id===podId);
+  if(!ep)return;
+  let rating=ep.rating||0;
+
+  document.getElementById('modalRoot').innerHTML=`
+  <div class="modal-overlay" onclick="closeModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-info">
+        <div class="modal-meta">${fmtD(ep.date)}${ep.duration?' · '+ep.duration:''} · ${STLBL[ep.status||'new']}</div>
+        <div class="modal-title">${ep.title}</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ai-box">
+        <div class="ai-box-head"><span class="gold">✦</span> AI Povzetek</div>
+        <div class="ai-box-text" id="aiSum">${ep.summary||'<span style="color:var(--text3);font-style:italic">Klikni "✦ AI analiza" spodaj</span>'}</div>
+        ${ep.insights&&ep.insights.length?`<ul style="margin-top:10px;padding-left:1.2rem">${ep.insights.map(i=>`<li style="font-size:12px;color:var(--text);margin-bottom:3px">${i}</li>`).join('')}</ul>`:''}
+      </div>
+      <div class="tip-box">
+        <div class="ai-box-head">💡 Kako uporabiti v življenju</div>
+        <div class="ai-box-text" id="aiTip">${ep.tip?`<strong style="color:var(--text)">Jutri:</strong> ${ep.tip}`:'<span style="color:var(--text3);font-style:italic">Klikni "✦ AI analiza" spodaj</span>'}</div>
+      </div>
+      <div id="aiErr"></div>
+      <div class="sep"></div>
+      <div class="field"><label>📅 Datum poslušanja</label><input type="date" id="eListenDate" value="${ep.listenedDate||''}"></div>
+      <div class="field"><label>📝 Moji zapiski</label><textarea id="eNote" placeholder="Misli, uvidi, ideje...">${ep.userNote||''}</textarea></div>
+      <div class="field"><label>🏷 Moje oznake (z vejico)</label><input type="text" id="eTags" value="${(ep.userTags||[]).join(', ')}" placeholder="implementiram, ideja, ponovi"></div>
+      <div class="field"><label>Ocena</label>
+        <div class="stars" id="starRow">
+          ${[1,2,3,4,5].map(i=>`<span class="star ${rating>=i?'on':''}" onclick="setStars(${i})"">★</span>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="saveEp('${epId}','${podId}','queued')">📋 V vrsto</button>
+      <button class="btn" onclick="saveEp('${epId}','${podId}','studying')">📖 Preučujem</button>
+      <button class="btn primary" onclick="saveEp('${epId}','${podId}','listened')">✓ Poslušano</button>
+      <button class="btn ai" id="aiBtn" onclick="genAI('${epId}','${podId}')">✦ AI analiza</button>
+      <button class="btn danger" onclick="saveEp('${epId}','${podId}','new')">↺ Ponastavi</button>
+    </div>
+  </div></div>`;
+
+  window._epRating=ep.rating||0;
+}
+
+function setStars(n){
+  window._epRating=n;
+  document.querySelectorAll('#starRow .star').forEach((s,i)=>{s.className='star'+(i<n?' on':'');});
+}
+
+function saveEp(epId,podId,status){
+  const eps=S.episodes[podId]||[];
+  const ep=eps.find(e=>e.id===epId);
+  if(!ep)return;
+  const ld=document.getElementById('eListenDate');
+  const nEl=document.getElementById('eNote');
+  const tEl=document.getElementById('eTags');
+  if(nEl)ep.userNote=nEl.value;
+  if(tEl)ep.userTags=tEl.value.split(',').map(t=>t.trim()).filter(Boolean);
+  if(ld&&ld.value)ep.listenedDate=ld.value;
+  if(status==='listened'&&!ep.listenedDate)ep.listenedDate=new Date().toISOString().split('T')[0];
+  ep.status=status;
+  ep.rating=window._epRating||0;
+  const sumEl=document.getElementById('aiSum');
+  const tipEl=document.getElementById('aiTip');
+  if(sumEl&&sumEl.dataset.updated)ep.summary=sumEl.dataset.val||ep.summary;
+  if(tipEl&&tipEl.dataset.updated)ep.tip=tipEl.dataset.val||ep.tip;
+  ss();driveSave();closeModal();renderMain();renderSidebar();
+}
+
+async function genAI(epId,podId){
+  const btn=document.getElementById('aiBtn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generiram...';}
+  const eps=S.episodes[podId]||[];
+  const ep=eps.find(e=>e.id===epId);
+  const pod=S.podcasts.find(p=>p.id===podId);
+  const note=(document.getElementById('eNote')||{}).value||'';
+  const errEl=document.getElementById('aiErr');
+  try{
+    const txt=await claude(`Analiziraj podcast epizodo. Vrni SAMO JSON brez \`\`\`json:
+{"summary":"Povzetek v slovenščini 3-4 stavki","tip":"Konkreten praktičen nasvet za jutri – v slovenščini","insights":["uvid1","uvid2","uvid3"],"tags":["tag1","tag2","tag3"]}
+Podcast: ${pod.name} (${pod.lang})
+Epizoda: ${ep.title}
+Moji zapiski: ${note||'ni'}`);
+    const p=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    const sumEl=document.getElementById('aiSum');
+    const tipEl=document.getElementById('aiTip');
+    if(sumEl&&p.summary){
+      sumEl.innerHTML=p.summary+(p.insights&&p.insights.length?`<ul style="margin-top:10px;padding-left:1.2rem">${p.insights.map(i=>`<li style="font-size:12px;color:var(--text);margin-bottom:3px">${i}</li>`).join('')}</ul>`:'');
+      sumEl.dataset.updated='1';sumEl.dataset.val=p.summary;
+    }
+    if(tipEl&&p.tip){tipEl.innerHTML=`<strong style="color:var(--text)">Jutri:</strong> ${p.tip}`;tipEl.dataset.updated='1';tipEl.dataset.val=p.tip;}
+    if(p.summary)ep.summary=p.summary;
+    if(p.tip)ep.tip=p.tip;
+    if(p.insights)ep.insights=p.insights;
+    if(p.tags)ep.tags=p.tags;
+    ss();driveSave();
+  } catch(e){if(errEl)errEl.innerHTML=`<div class="err-box">Napaka: ${e.message}</div>`;}
+  if(btn){btn.disabled=false;btn.innerHTML='✦ Regeneriraj';}
+}
+
+function closeModal(){document.getElementById('modalRoot').innerHTML='';}
+function closeModalOverlay(e){if(e.target===e.currentTarget)closeModal();}
+
+// ── ADD EPISODE MODAL ───────────────────────────────────────────────────────
+function openAddEpisode(){
+  document.getElementById('modalRoot').innerHTML=`
+  <div class="modal-overlay" onclick="closeModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-info"><div class="modal-meta">Ročni vnos</div><div class="modal-title">Dodaj epizodo</div></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Naslov *</label><input type="text" id="nTitle" placeholder="Naziv epizode"></div>
+      <div class="field"><label>Datum epizode</label><input type="date" id="nDate"></div>
+      <div class="field"><label>Trajanje</label><input type="text" id="nDur" placeholder="1h 30m"></div>
+      <div class="field"><label>Datum poslušanja (Apple Podcasts)</label><input type="date" id="nListened"></div>
+      <div class="field"><label>Status</label>
+        <select id="nStatus">
+          <option value="new">Novo</option>
+          <option value="queued">V vrsti</option>
+          <option value="studying">Preučujem</option>
+          <option value="listened">Poslušano</option>
+        </select>
+      </div>
+      <div class="field"><label>Oznake (z vejico)</label><input type="text" id="nTags" placeholder="motivacija, zdravje"></div>
+      <div class="field"><label>Zapisk</label><textarea id="nNote" placeholder="Misli..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" onclick="saveManualEp()">Shrani</button>
+      <button class="btn" onclick="closeModal()">Prekliči</button>
+    </div>
+  </div></div>`;
+}
+
+function saveManualEp(){
+  const title=(document.getElementById('nTitle')||{}).value||'';
+  if(!title.trim()){alert('Vnesi naslov.');return;}
+  const ep={
+    id:S.activePod+'-manual-'+Date.now(),
+    title:title.trim(),
+    date:(document.getElementById('nDate')||{}).value||'',
+    duration:(document.getElementById('nDur')||{}).value||'',
+    listenedDate:(document.getElementById('nListened')||{}).value||'',
+    status:(document.getElementById('nStatus')||{}).value||'new',
+    userTags:((document.getElementById('nTags')||{}).value||'').split(',').map(t=>t.trim()).filter(Boolean),
+    userNote:(document.getElementById('nNote')||{}).value||'',
+    summary:'',tip:'',tags:[],rating:0,insights:[]
+  };
+  if(!S.episodes[S.activePod])S.episodes[S.activePod]=[];
+  S.episodes[S.activePod].unshift(ep);
+  ss();driveSave();closeModal();renderMain();renderSidebar();
+}
+
+// ── ADD PODCAST MODAL ───────────────────────────────────────────────────────
+let _selLang='EN';
+function openAddPodcast(){
+  const LANGS2=['SL','EN','DE','IT','OTHER'];
+  const LNAMES={SL:'🇸🇮 Slovenščina',EN:'🇺🇸 Angleščina',DE:'🇩🇪 Nemščina',IT:'🇮🇹 Italijanščina',OTHER:'Drugo'};
+  document.getElementById('modalRoot').innerHTML=`
+  <div class="modal-overlay" onclick="closeModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-info"><div class="modal-meta">Nov podcast</div><div class="modal-title">Dodaj podcast</div></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Ime podcasta *</label><input type="text" id="apName" placeholder="npr. Lex Fridman Podcast"></div>
+      <div class="field"><label>Jezik</label>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:4px">
+          ${LANGS2.map(l=>`<button onclick="selLang('${l}')" id="ll_${l}" style="padding:9px;border-radius:7px;border:1px solid ${l===_selLang?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.08)'};background:${l===_selLang?'var(--bg3)':'transparent'};color:${l===_selLang?'var(--text)':'var(--text3)'};font-size:13px;cursor:pointer">${LNAMES[l]}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" onclick="saveNewPod()">Dodaj</button>
+      <button class="btn" onclick="closeModal()">Prekliči</button>
+    </div>
+  </div></div>`;
+}
+
+function selLang(l){
+  _selLang=l;
+  document.querySelectorAll('[id^="ll_"]').forEach(b=>{
+    const isMe=b.id==='ll_'+l;
+    b.style.border=`1px solid ${isMe?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.08)'}`;
+    b.style.background=isMe?'var(--bg3)':'transparent';
+    b.style.color=isMe?'var(--text)':'var(--text3)';
+  });
+}
+
+function saveNewPod(){
+  const name=(document.getElementById('apName')||{}).value||'';
+  if(!name.trim()){alert('Vnesi ime.');return;}
+  const cols=['#4caf7d','#5b9bd5','#c8a96e','#d4a843','#d45b5b','#a067c8'];
+  const pod={id:'custom_'+Date.now(),name:name.trim(),lang:_selLang==='OTHER'?'EN':_selLang,color:cols[Math.floor(Math.random()*cols.length)]};
+  S.podcasts.push(pod);
+  ss();driveSave();closeModal();
+  S.activePod=pod.id;renderSidebar();renderMain();
+}
+</script>
+</body>
+</html>
