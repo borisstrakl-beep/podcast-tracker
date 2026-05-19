@@ -319,7 +319,7 @@ function ls(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch(e){
 function ss(){try{localStorage.setItem(STORE,JSON.stringify({token:S.token,driveFileId:S.driveFileId,podcasts:S.podcasts,episodes:S.episodes}))}catch(e){}}
 
 async function claude(prompt){
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+  const r=await fetch('https://anthropic-proxy.boris-strakl.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
   const d=await r.json();
   if(d.error)throw new Error(d.error.message);
   return d.content.filter(c=>c.type==='text').map(c=>c.text).join('');
