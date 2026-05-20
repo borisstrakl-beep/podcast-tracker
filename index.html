@@ -2,246 +2,193 @@
 <html lang="sl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0a">
 <title>Podcast Tracker</title>
 <style>
-:root{
-  --bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --text:#f0ede8;--text2:#8a8680;--text3:#4a4642;
-  --gold:#c8a96e;--gold2:#a07840;
-  --green:#4caf7d;--green-bg:rgba(76,175,125,0.12);
-  --amber:#d4a843;--amber-bg:rgba(212,168,67,0.12);
-  --blue:#5b9bd5;--blue-bg:rgba(91,155,213,0.12);
-  --red:#d45b5b;--red-bg:rgba(212,91,91,0.12);
-  --r:10px;--r-sm:7px;
-  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
-  --serif:Georgia,'Times New Roman',serif;
-  --sidebar-w:260px;
-}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
-input,textarea,select,button{font-family:var(--font);outline:none}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+html,body{height:100%;background:#0a0a0a;color:#f0ede8;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
+:root{--gold:#c8a96e;--green:#4caf7d;--amber:#d4a843;--blue:#5b9bd5;--red:#d45b5b;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;--b1:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13)}
+input,textarea,select,button{font-family:inherit;-webkit-appearance:none;outline:none}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── LAYOUT ── */
-#app{display:flex;height:100vh;height:100vh;overflow:hidden;position:relative}
-.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);z-index:50}
+/* LAYOUT */
+#app{display:flex;height:100vh;position:relative;overflow:hidden}
+.sidebar{width:260px;background:var(--bg2);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:transform 0.3s;z-index:50}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
-/* ── MOBILE ── */
-@media(max-width:700px){
-  .sidebar{position:fixed;top:0;left:0;height:100%;height:100vh;transform:translateX(-100%);box-shadow:4px 0 24px rgba(0,0,0,0.5)}
+/* MOBILE */
+@media(max-width:680px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);box-shadow:4px 0 20px rgba(0,0,0,0.6)}
   .sidebar.open{transform:translateX(0)}
-  .mob-overlay{display:block!important}
-  .mob-menu-btn{display:flex!important}
-  #app{flex-direction:column}
-  .main{width:100%}
-  .main-header{padding:0.75rem 1rem!important}
-  .main-header h2{font-size:16px!important}
-  .hdr-actions{gap:6px!important}
-  .stats-bar .stat{padding:8px 10px!important}
-  .stat-val{font-size:18px!important}
-  .filters-bar{padding:6px 1rem!important;gap:4px!important}
-  .ep-list{padding:0.75rem 1rem!important}
-  .ep-card{padding:12px 13px!important}
-  .modal{width:100%!important;max-width:100%!important;border-radius:20px 20px 0 0!important;position:fixed!important;bottom:0!important;top:auto!important;max-height:92vh!important;}
-  .modal-overlay{align-items:flex-end!important}
+  .overlay{display:block!important}
+  .mob-btn{display:flex!important}
+  .ep-list{padding:0.75rem!important}
+  .stat{padding:8px 10px!important}
+  .stat-val{font-size:16px!important}
 }
-.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40;backdrop-filter:blur(2px)}
-.mob-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;cursor:pointer;color:var(--text2);font-size:16px;flex-shrink:0}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40}
+.mob-btn{display:none;width:34px;height:34px;border-radius:7px;border:1px solid var(--b2);background:var(--bg3);color:#9a9690;font-size:16px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
 
-/* ── SIDEBAR ── */
-.sidebar-top{padding:1rem;border-bottom:1px solid var(--border);flex-shrink:0}
-.brand{font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:4px}
-.model-badge{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);border:1px solid rgba(76,175,125,0.25);border-radius:20px;padding:2px 9px;font-size:10px;color:var(--green);margin-bottom:6px}
+/* SIDEBAR */
+.sb-top{padding:0.875rem 1rem 0.75rem;border-bottom:1px solid var(--b1);flex-shrink:0}
+.brand{font-size:15px;color:var(--gold);margin-bottom:4px;font-style:italic}
+.badge{display:inline-flex;background:rgba(76,175,125,0.12);border:1px solid rgba(76,175,125,0.25);border-radius:20px;padding:2px 8px;font-size:10px;color:var(--green);margin-bottom:6px}
 .sync-row{display:flex;align-items:center;gap:6px}
-.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background 0.3s}
-.sync-dot.ok{background:var(--green)}.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite}.sync-dot.err,.sync-dot.offline{background:var(--text3)}
-.sync-lbl{font-size:11px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sync-btn{font-size:12px;color:var(--gold);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;flex-shrink:0}
-.pod-search{padding:6px 8px;border-bottom:1px solid var(--border);flex-shrink:0}
-.pod-search input{width:100%;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:12px}
-.pod-search input::placeholder{color:var(--text3)}
-.lang-bar{display:flex;gap:4px;padding:5px 8px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
-.lang-chip{padding:2px 9px;border-radius:20px;font-size:10px;border:1px solid var(--border);color:var(--text3);cursor:pointer;background:transparent;transition:0.12s}
-.lang-chip.active{background:var(--bg4);color:var(--text);border-color:var(--border2)}
-.pod-list{flex:1;overflow-y:auto;padding:6px}
-.pod-item{padding:9px 10px;border-radius:var(--r-sm);cursor:pointer;margin-bottom:2px;border:1px solid transparent;display:flex;align-items:center;gap:8px;transition:0.12s}
-.pod-item:hover,.pod-item.active{background:var(--bg3);border-color:var(--border2)}
+.sync-dot{width:7px;height:7px;border-radius:50%}
+.sync-lbl{font-size:11px;color:#4a4642;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync-refresh{font-size:11px;color:var(--gold);background:none;border:none;cursor:pointer;padding:2px 4px}
+.sb-search{padding:6px 8px;border-bottom:1px solid var(--b1);flex-shrink:0}
+.sb-search input{width:100%;padding:6px 10px;background:var(--bg3);border:1px solid var(--b1);border-radius:6px;color:#f0ede8;font-size:12px}
+.lang-bar{display:flex;gap:4px;padding:5px 8px;border-bottom:1px solid var(--b1);flex-wrap:wrap;flex-shrink:0}
+.lc{padding:2px 8px;border-radius:20px;font-size:10px;border:1px solid var(--b1);color:#4a4642;cursor:pointer;background:transparent}
+.lc.on{background:var(--bg4);color:#f0ede8;border-color:var(--b2)}
+.pod-list{flex:1;overflow-y:auto;padding:5px;-webkit-overflow-scrolling:touch}
+.pod-item{padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:2px;display:flex;align-items:center;gap:8px;border:1px solid transparent}
+.pod-item.on{background:var(--bg3);border-color:var(--b2)}
 .pod-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .pod-info{flex:1;min-width:0}
-.pod-name{font-size:12px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pod-sub{font-size:10px;color:var(--text3)}
-.pod-prog{height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-top:4px;overflow:hidden}
-.pod-prog-bar{height:100%;background:var(--green);border-radius:1px;transition:width 0.3s}
-.pod-count{font-size:10px;color:var(--text3);background:var(--bg4);padding:1px 6px;border-radius:10px;flex-shrink:0}
-.add-pod-btn{margin:6px 10px 10px;padding:8px;border-radius:var(--r-sm);border:1px dashed var(--border2);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;width:calc(100% - 20px);transition:0.12s}
-.add-pod-btn:hover{color:var(--text);border-color:var(--gold)}
+.pod-name{font-size:12px;font-weight:500;color:#f0ede8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod-sub{font-size:10px;color:#4a4642}
+.pod-bar{height:2px;background:rgba(255,255,255,0.05);border-radius:1px;margin-top:4px}
+.pod-bar-fill{height:100%;background:var(--green);border-radius:1px}
+.pod-cnt{font-size:10px;color:#4a4642;background:var(--bg4);padding:1px 6px;border-radius:10px;flex-shrink:0}
+.add-pod{margin:6px 10px 10px;padding:8px;border-radius:6px;border:1px dashed var(--b2);background:transparent;color:#4a4642;font-size:12px;cursor:pointer;width:calc(100% - 20px)}
 
-/* ── MAIN ── */
-.main-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
-.main-header h2{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hdr-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
-.hdr-btn{padding:6px 12px;border-radius:var(--r-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:0.12s}
-.hdr-btn:hover{background:var(--bg3);color:var(--text)}
-.hdr-btn.gold{color:var(--gold);border-color:rgba(200,169,110,0.3)}
-.hdr-btn.gold:hover{background:rgba(200,169,110,0.08)}
-.hdr-btn:disabled{opacity:0.45;cursor:not-allowed}
-.stats-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.stat{flex:1;padding:10px 14px;border-right:1px solid var(--border)}
+/* MAIN */
+.mh{padding:0.875rem 1.25rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mh h2{font-size:17px;color:#f0ede8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400;font-style:italic}
+.hbtn{padding:6px 12px;border-radius:6px;border:1px solid var(--b2);background:transparent;color:#8a8680;font-size:12px;cursor:pointer;white-space:nowrap}
+.hbtn.gold{color:var(--gold);border-color:rgba(200,169,110,0.3)}
+.hbtn:disabled{opacity:0.4;cursor:not-allowed}
+.stats{display:flex;border-bottom:1px solid var(--b1);flex-shrink:0}
+.stat{flex:1;padding:9px 12px;border-right:1px solid var(--b1)}
 .stat:last-child{border-right:none}
-.stat-val{font-size:20px;font-weight:500;color:var(--text)}
-.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:1px}
-.filters-bar{display:flex;gap:5px;padding:8px 1.5rem;border-bottom:1px solid var(--border);align-items:center;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.filters-bar::-webkit-scrollbar{display:none}
-.f-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text3);cursor:pointer;white-space:nowrap;transition:0.12s;flex-shrink:0}
-.f-btn.active{background:var(--bg3);color:var(--text);border-color:var(--border2)}
-.ep-search{margin-left:auto;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:11px;width:140px;flex-shrink:0}
-.ep-search::placeholder{color:var(--text3)}
-.ep-list{flex:1;overflow-y:auto;padding:1rem 1.5rem;-webkit-overflow-scrolling:touch}
-.ep-card{border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;margin-bottom:10px;cursor:pointer;background:var(--bg);transition:0.12s;-webkit-user-select:none;user-select:none}
-.ep-card:active{background:var(--bg2)}
+.stat-val{font-size:18px;font-weight:500;color:#f0ede8}
+.stat-lbl{font-size:10px;color:#4a4642;text-transform:uppercase;letter-spacing:0.05em}
+.fbar{display:flex;gap:4px;padding:7px 1.25rem;border-bottom:1px solid var(--b1);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.fbar::-webkit-scrollbar{display:none}
+.fbtn{padding:3px 11px;border-radius:20px;border:1px solid var(--b1);background:transparent;font-size:11px;color:#4a4642;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.fbtn.on{background:var(--bg3);color:#f0ede8;border-color:var(--b2)}
+.ep-search{margin-left:auto;padding:3px 9px;background:var(--bg3);border:1px solid var(--b1);border-radius:20px;color:#f0ede8;font-size:11px;width:120px;flex-shrink:0}
+.ep-list{flex:1;overflow-y:auto;padding:0.875rem 1.25rem;-webkit-overflow-scrolling:touch}
+.ep-card{border:1px solid var(--b1);border-radius:10px;padding:12px 14px;margin-bottom:9px;cursor:pointer;background:#0a0a0a}
 .ep-card.listened{border-left:3px solid var(--green)}
 .ep-card.studying{border-left:3px solid var(--amber)}
 .ep-card.queued{border-left:3px solid var(--blue)}
-.ep-top{display:flex;gap:8px;margin-bottom:7px}
-.ep-title{font-size:13px;font-weight:500;color:var(--text);line-height:1.4;flex:1}
-.ep-meta{font-size:11px;color:var(--text3);white-space:nowrap;flex-shrink:0}
-.ep-summary{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:9px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ep-top{display:flex;gap:8px;margin-bottom:6px}
+.ep-title{font-size:13px;font-weight:500;color:#f0ede8;line-height:1.4;flex:1}
+.ep-date{font-size:11px;color:#4a4642;white-space:nowrap;flex-shrink:0}
+.ep-sum{font-size:12px;color:#8a8680;line-height:1.55;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ep-foot{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.tag{padding:2px 7px;border-radius:10px;font-size:10px}
-.tag-gray{background:var(--bg3);color:var(--text3)}
-.tag-blue{background:var(--blue-bg);color:var(--blue)}
-.tag-amber{background:var(--amber-bg);color:var(--amber)}
-.tag-green{background:var(--green-bg);color:var(--green)}
+.tag{padding:2px 7px;border-radius:10px;font-size:10px;background:var(--bg3);color:#4a4642}
+.tag-blue{background:rgba(91,155,213,0.12);color:var(--blue)}
+.tag-amber{background:rgba(212,168,67,0.12);color:var(--amber)}
+.tag-green{background:rgba(76,175,125,0.12);color:var(--green)}
 .st-pill{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500}
-.empty{text-align:center;padding:4rem 2rem;color:var(--text3);font-size:13px;line-height:1.7}
-.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;color:var(--text3)}
-.welcome-num{font-family:var(--serif);font-size:72px;color:var(--gold);opacity:0.25;line-height:1}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:2rem;color:#4a4642}
+.welcome-num{font-size:72px;color:var(--gold);opacity:0.2;line-height:1;font-style:italic}
+.empty{text-align:center;padding:3rem 1rem;color:#4a4642;font-size:13px;line-height:1.8}
 
-/* ── MODAL ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:200;padding:1rem;backdrop-filter:blur(4px)}
-.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:540px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
-.modal-head{padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;flex-shrink:0}
-.modal-head-info{flex:1;min-width:0}
-.modal-meta{font-size:11px;color:var(--text3);margin-bottom:4px}
-.modal-title{font-family:var(--serif);font-size:16px;color:var(--text);line-height:1.4}
-.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px;flex-shrink:0}
-.modal-body{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;-webkit-overflow-scrolling:touch}
-.modal-actions{display:flex;gap:6px;padding:1rem 1.5rem;border-top:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
-.ai-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px;margin-bottom:10px}
-.ai-box-head{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px}
-.ai-box-head .gold{color:var(--gold)}
-.ai-box-text{font-size:13px;color:var(--text2);line-height:1.65}
-.tip-box{background:var(--blue-bg);border:1px solid rgba(91,155,213,0.2);border-radius:var(--r-sm);padding:13px;margin-bottom:12px}
-.tip-box .ai-box-head{color:var(--blue)}
-.field{margin-bottom:12px}
-.field label{font-size:11px;color:var(--text3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em}
-.field input,.field textarea,.field select{width:100%;padding:9px 11px;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-size:14px;transition:0.12s;-webkit-appearance:none}
-.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold)}
-.field textarea{height:88px;resize:vertical;line-height:1.5}
-.sep{height:1px;background:var(--border);margin:14px 0}
-.stars{display:flex;gap:4px}
-.star{font-size:24px;cursor:pointer;color:var(--text3);-webkit-user-select:none;user-select:none}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.78);display:flex;align-items:flex-end;justify-content:center;z-index:200;padding:0}
+@media(min-width:681px){.modal-bg{align-items:center;padding:1rem}}
+.modal{background:var(--bg2);border:1px solid var(--b2);border-radius:18px 18px 0 0;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:681px){.modal{border-radius:14px;max-width:520px;max-height:88vh}}
+.modal-head{padding:1rem 1.25rem 0.875rem;border-bottom:1px solid var(--b1);display:flex;gap:8px;align-items:flex-start;flex-shrink:0}
+.modal-meta{font-size:11px;color:#4a4642;margin-bottom:3px}
+.modal-title{font-size:15px;color:#f0ede8;line-height:1.4;font-style:italic}
+.mclose{background:none;border:none;color:#4a4642;cursor:pointer;font-size:20px;padding:0;flex-shrink:0;line-height:1}
+.modal-body{flex:1;overflow-y:auto;padding:1rem 1.25rem;-webkit-overflow-scrolling:touch}
+.modal-acts{display:flex;gap:6px;padding:0.875rem 1.25rem;border-top:1px solid var(--b1);flex-shrink:0;flex-wrap:wrap}
+.abox{background:var(--bg3);border:1px solid var(--b1);border-radius:8px;padding:12px;margin-bottom:9px}
+.abox-head{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a4642;margin-bottom:7px}
+.abox-text{font-size:13px;color:#8a8680;line-height:1.6}
+.tip-box{background:rgba(91,155,213,0.07);border:1px solid rgba(91,155,213,0.18);border-radius:8px;padding:12px;margin-bottom:12px}
+.tip-head{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--blue);margin-bottom:7px}
+.sep{height:1px;background:var(--b1);margin:12px 0}
+.field{margin-bottom:11px}
+.field label{font-size:11px;color:#4a4642;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.05em}
+.field input,.field textarea,.field select{width:100%;padding:10px 11px;background:#0a0a0a;border:1px solid var(--b2);border-radius:6px;color:#f0ede8;font-size:16px}
+.field textarea{height:85px;resize:vertical;line-height:1.5}
+.stars{display:flex;gap:3px;margin-top:2px}
+.star{font-size:26px;cursor:pointer;color:#4a4642;-webkit-user-select:none;user-select:none}
 .star.on{color:var(--amber)}
-.err-box{background:var(--red-bg);border:1px solid rgba(212,91,91,0.2);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--red);margin-bottom:12px}
-
-/* ── BUTTONS ── */
-.btn{padding:8px 14px;border-radius:var(--r-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:0.12s;white-space:nowrap}
-.btn:hover{background:var(--bg3);color:var(--text)}
+.err{background:rgba(212,91,91,0.1);border:1px solid rgba(212,91,91,0.2);border-radius:6px;padding:8px 11px;font-size:12px;color:var(--red);margin-bottom:10px}
+.btn{padding:9px 14px;border-radius:6px;border:1px solid var(--b2);background:transparent;color:#8a8680;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
 .btn.primary{background:var(--gold);color:#1a1200;border-color:var(--gold);font-weight:700}
-.btn.primary:hover{background:var(--gold2);color:var(--text)}
 .btn.danger{color:var(--red);border-color:rgba(212,91,91,0.2)}
-.btn.danger:hover{background:var(--red-bg)}
 .btn.ai{color:var(--gold);border-color:rgba(200,169,110,0.3)}
-.btn.ai:hover{background:rgba(200,169,110,0.08)}
-.btn:disabled{opacity:0.45;cursor:not-allowed}
-.spinner{display:inline-block;width:11px;height:11px;border:2px solid rgba(200,169,110,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid rgba(200,169,110,0.15);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite}
 
-/* ── AUTH ── */
-#auth{display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:100vh;padding:1.5rem;background:var(--bg)}
-.auth-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:2rem;max-width:460px;width:100%;text-align:center}
-.auth-card h1{font-family:var(--serif);font-size:24px;font-weight:400;color:var(--gold);margin-bottom:6px}
-.auth-card p{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:1.25rem}
-.auth-steps{text-align:left;background:var(--bg3);border-radius:var(--r-sm);padding:1rem;margin-bottom:1.25rem;font-size:13px;color:var(--text2);line-height:2}
+/* AUTH */
+#auth{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem;background:#0a0a0a}
+.auth-card{background:var(--bg2);border:1px solid var(--b2);border-radius:16px;padding:2rem;max-width:440px;width:100%;text-align:center}
+.auth-card h1{font-size:22px;color:var(--gold);margin-bottom:6px;font-weight:400;font-style:italic}
+.auth-card p{font-size:13px;color:#8a8680;line-height:1.7;margin-bottom:1.25rem}
+.auth-steps{text-align:left;background:var(--bg3);border-radius:8px;padding:0.875rem 1rem;margin-bottom:1.25rem;font-size:13px;color:#8a8680;line-height:2.1}
 .auth-steps a{color:var(--gold)}
 .auth-steps code{background:var(--bg4);padding:1px 5px;border-radius:3px;color:var(--gold);font-size:11px}
-.auth-input{width:100%;padding:10px 13px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-size:14px;margin-bottom:10px;-webkit-appearance:none}
-.auth-input:focus{border-color:var(--gold)}
-.auth-btn{width:100%;padding:12px;background:var(--gold);border:none;border-radius:var(--r-sm);color:#1a1200;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px}
-.auth-skip{width:100%;padding:10px;background:transparent;border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text2);font-size:13px;cursor:pointer}
-
-/* ── ANIMS ── */
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.auth-input{width:100%;padding:11px 13px;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;color:#f0ede8;font-size:16px;margin-bottom:10px}
+.auth-btn{width:100%;padding:13px;background:var(--gold);border:none;border-radius:8px;color:#1a1200;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.auth-skip{width:100%;padding:11px;background:transparent;border:1px solid var(--b2);border-radius:8px;color:#8a8680;font-size:13px;cursor:pointer}
 </style>
 </head>
 <body>
 
-<!-- AUTH -->
 <div id="auth">
   <div class="auth-card">
     <div style="font-size:32px;margin-bottom:8px">🎙</div>
     <h1>Podcast Tracker</h1>
-    <div class="model-badge" style="display:inline-flex;margin-bottom:12px">✦ Haiku · optimizirani stroški</div>
-    <p>Vnesi Google Drive access token za shranjevanje podatkov v oblak.</p>
+    <div class="badge" style="display:inline-flex;margin-bottom:14px">✦ Haiku · optimizirani stroški</div>
+    <p>Vnesi Google Drive access token za shranjevanje v oblak.</p>
     <div class="auth-steps">
       <div>1. Odpri <a href="https://developers.google.com/oauthplayground" target="_blank">Google OAuth Playground</a></div>
-      <div>2. Scope: <code>googleapis.com/auth/drive.file</code> → Authorize APIs</div>
-      <div>3. Klikni <strong style="color:var(--text)">Exchange authorization code for tokens</strong></div>
-      <div>4. Kopiraj <strong style="color:var(--text)">Access token</strong> → prilepi spodaj</div>
+      <div>2. Scope: <code>googleapis.com/auth/drive.file</code> → Authorize</div>
+      <div>3. Klikni <strong style="color:#f0ede8">Exchange authorization code for tokens</strong></div>
+      <div>4. Kopiraj <strong style="color:#f0ede8">Access token</strong> → prilepi spodaj</div>
     </div>
     <input class="auth-input" id="tokenInput" type="text" placeholder="ya29.a0..." autocomplete="off" autocorrect="off" spellcheck="false">
     <button class="auth-btn" onclick="doLogin()">Poveži z Google Drive</button>
-    <button class="auth-skip" onclick="doSkip()">Nadaljuj brez Drive (lokalno)</button>
+    <button class="auth-skip" onclick="doSkip()">Nadaljuj brez Drive</button>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app" style="display:none">
-  <!-- Mobile overlay -->
-  <div class="mob-overlay" id="mobOverlay" onclick="closeSidebar()"></div>
-
-  <!-- SIDEBAR -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
   <div class="sidebar" id="sidebar">
-    <div class="sidebar-top">
+    <div class="sb-top">
       <div class="brand">🎙 Podcast Tracker</div>
-      <div class="model-badge">✦ Haiku · optimizirani stroški</div>
+      <div class="badge">✦ Haiku</div>
       <div class="sync-row">
-        <div class="sync-dot" id="syncDot"></div>
+        <div class="sync-dot" id="syncDot" style="background:#4a4642"></div>
         <span class="sync-lbl" id="syncLbl">Lokalno</span>
-        <button class="sync-btn" id="syncBtn" onclick="doSync()" style="display:none">↻</button>
+        <button class="sync-refresh" id="syncRefBtn" onclick="doSync()" style="display:none">↻</button>
       </div>
     </div>
-    <div class="pod-search">
-      <input type="search" placeholder="Iskanje podcastov..." id="podSearch" oninput="renderSidebar()" autocorrect="off">
-    </div>
+    <div class="sb-search"><input type="search" id="podSearch" placeholder="Iskanje..." oninput="renderPodList()" autocorrect="off"></div>
     <div class="lang-bar" id="langBar"></div>
     <div class="pod-list" id="podList"></div>
-    <button class="add-pod-btn" onclick="openAddPodcast()">+ Dodaj podcast</button>
+    <button class="add-pod" onclick="openAddPod()">+ Dodaj podcast</button>
   </div>
-
-  <!-- MAIN -->
-  <div class="main" id="mainPane">
-    <div class="welcome" id="welcome">
-      <div class="welcome-num" id="welcomeNum">0</div>
-      <p style="margin-top:1rem;max-width:260px;line-height:1.7;font-size:14px">podcastov v tvoji knjižnici.<br>Izberi podcast iz menija.</p>
+  <div class="main" id="mainArea">
+    <div class="welcome" id="welcomeDiv">
+      <div class="welcome-num" id="welcomeNum">136</div>
+      <p style="margin-top:1rem;font-size:14px;max-width:240px;line-height:1.7">podcastov v knjižnici.<br>Izberi podcast iz menija.</p>
     </div>
   </div>
 </div>
 
-<!-- MODAL ROOT -->
 <div id="modalRoot"></div>
 
 <script>
-const MODEL='claude-haiku-4-5-20251001';
-const STORE='pt_v3';
+var PROXY = 'https://anthropic-proxy.boris-strakl.workers.dev';
+var MODEL = 'claude-haiku-4-5-20251001';
+var STORE = 'pt_v5';
 
-const PODCASTS=[
+var PODCASTS = [
   {id:'p001',name:'10% Happier',lang:'EN',color:'#4caf7d'},{id:'p002',name:'11 Leben',lang:'DE',color:'#5b9bd5'},
   {id:'p003',name:'45 minut z Nejcem Vidmarjem',lang:'SL',color:'#c8a96e'},{id:'p004',name:'A Bit of Optimism',lang:'EN',color:'#4caf7d'},
   {id:'p005',name:'Aidea',lang:'IT',color:'#d4a843'},{id:'p006',name:'Alternative History',lang:'EN',color:'#4caf7d'},
@@ -309,422 +256,400 @@ const PODCASTS=[
   {id:'p129',name:'Vordenker',lang:'DE',color:'#5b9bd5'},{id:'p130',name:'Was bisher geschah',lang:'DE',color:'#5b9bd5'},
   {id:'p131',name:'Zeitzeichen',lang:'DE',color:'#5b9bd5'},{id:'p132',name:'Wegen guter Führung',lang:'DE',color:'#5b9bd5'},
   {id:'p133',name:'Zagret za tek',lang:'SL',color:'#c8a96e'},{id:'p134',name:'WW2 Pod',lang:'EN',color:'#4caf7d'},
-  {id:'p135',name:'Zeit Geschichte',lang:'DE',color:'#5b9bd5'},{id:'p136',name:'Zeit Wissen',lang:'DE',color:'#5b9bd5'},
+  {id:'p135',name:'Zeit Geschichte',lang:'DE',color:'#5b9bd5'},{id:'p136',name:'Zeit Wissen',lang:'DE',color:'#5b9bd5'}
 ];
 
-// ── STATE ──────────────────────────────────────────────────────────────────
-let S={token:null,driveFileId:null,podcasts:[...PODCASTS],episodes:{},activePod:null,filter:'all',lang:'ALL',fetching:null};
+var S = {token:null,driveFileId:null,podcasts:PODCASTS.slice(),episodes:{},activePod:null,filter:'all',lang:'ALL',fetching:null,rating:0};
 
-function ls(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch(e){return{}}}
-function ss(){try{localStorage.setItem(STORE,JSON.stringify({token:S.token,driveFileId:S.driveFileId,podcasts:S.podcasts,episodes:S.episodes}))}catch(e){}}
+function lsGet(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')}catch(e){return{}}}
+function lsSave(){try{localStorage.setItem(STORE,JSON.stringify({token:S.token,driveFileId:S.driveFileId,podcasts:S.podcasts,episodes:S.episodes}))}catch(e){}}
 
-async function claude(prompt){
-  const r=await fetch('https://anthropic-proxy.boris-strakl.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})});
-  const d=await r.json();
-  if(d.error)throw new Error(d.error.message);
-  return d.content.filter(c=>c.type==='text').map(c=>c.text).join('');
+function fmtD(d){try{return new Date(d).toLocaleDateString('sl-SI',{day:'numeric',month:'short',year:'numeric'})}catch(e){return d||''}}
+
+function setSyncUI(state,label){
+  var dot=document.getElementById('syncDot');
+  var lbl=document.getElementById('syncLbl');
+  if(!dot||!lbl)return;
+  var colors={ok:'#4caf7d',syncing:'#d4a843',err:'#4a4642',offline:'#4a4642'};
+  dot.style.background=colors[state]||'#4a4642';
+  lbl.textContent=label;
 }
 
-async function driveSave(){
-  if(!S.token)return;
-  setSyncState('syncing','Shranjujem...');
-  const body=JSON.stringify({podcasts:S.podcasts,episodes:S.episodes});
-  try{
-    if(S.driveFileId){
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${S.driveFileId}?uploadType=media`,{method:'PATCH',headers:{'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'},body});
-    } else {
-      const m=await fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'},body:JSON.stringify({name:'podcast_tracker_data.json',mimeType:'application/json'})});
-      const mj=await m.json();
-      S.driveFileId=mj.id;
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${S.driveFileId}?uploadType=media`,{method:'PATCH',headers:{'Authorization':`Bearer ${S.token}`,'Content-Type':'application/json'},body});
-    }
-    ss();setSyncState('ok','Drive ✓ '+new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'}));
-  } catch(e){setSyncState('err','Napaka — token potekel?');}
+function claude(prompt,cb){
+  fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:MODEL,max_tokens:1500,messages:[{role:'user',content:prompt}]})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d.error)throw new Error(d.error.message);
+    cb(null,d.content.filter(function(c){return c.type==='text'}).map(function(c){return c.text}).join(''));
+  })
+  .catch(function(e){cb(e.message,null)});
 }
 
-async function driveLoad(){
+function driveSave(){
   if(!S.token)return;
-  setSyncState('syncing','Nalagam...');
-  try{
-    const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=name='podcast_tracker_data.json'&fields=files(id)`,{headers:{'Authorization':`Bearer ${S.token}`}});
-    const j=await r.json();
-    if(j.files&&j.files.length){
-      S.driveFileId=j.files[0].id;
-      const fr=await fetch(`https://www.googleapis.com/drive/v3/files/${S.driveFileId}?alt=media`,{headers:{'Authorization':`Bearer ${S.token}`}});
-      const d=await fr.json();
-      if(d.podcasts){const m=[...d.podcasts];PODCASTS.forEach(p=>{if(!m.find(x=>x.id===p.id))m.push(p);});S.podcasts=m;}
+  setSyncUI('syncing','Shranjujem...');
+  var body=JSON.stringify({podcasts:S.podcasts,episodes:S.episodes});
+  var headers={'Authorization':'Bearer '+S.token,'Content-Type':'application/json'};
+  function upload(id){
+    fetch('https://www.googleapis.com/upload/drive/v3/files/'+id+'?uploadType=media',{method:'PATCH',headers:headers,body:body})
+    .then(function(){lsSave();setSyncUI('ok','Drive ✓ '+new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'}))})
+    .catch(function(){setSyncUI('err','Napaka — token potekel?')});
+  }
+  if(S.driveFileId){upload(S.driveFileId);return;}
+  fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:headers,body:JSON.stringify({name:'podcast_tracker_data.json',mimeType:'application/json'})})
+  .then(function(r){return r.json()})
+  .then(function(mj){S.driveFileId=mj.id;upload(mj.id)})
+  .catch(function(){setSyncUI('err','Napaka')});
+}
+
+function driveLoad(cb){
+  if(!S.token){cb&&cb();return;}
+  setSyncUI('syncing','Nalagam...');
+  fetch('https://www.googleapis.com/drive/v3/files?q=name%3D\'podcast_tracker_data.json\'&fields=files(id)',{headers:{'Authorization':'Bearer '+S.token}})
+  .then(function(r){return r.json()})
+  .then(function(j){
+    if(!j.files||!j.files.length){setSyncUI('ok','Drive ✓');cb&&cb();return;}
+    S.driveFileId=j.files[0].id;
+    return fetch('https://www.googleapis.com/drive/v3/files/'+S.driveFileId+'?alt=media',{headers:{'Authorization':'Bearer '+S.token}})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d.podcasts){var m=d.podcasts.slice();PODCASTS.forEach(function(p){if(!m.find(function(x){return x.id===p.id}))m.push(p)});S.podcasts=m;}
       if(d.episodes)S.episodes=d.episodes;
-      ss();
-    }
-    setSyncState('ok','Drive ✓');
-  } catch(e){setSyncState('err','Napaka nalaganja');}
+      lsSave();setSyncUI('ok','Drive ✓');cb&&cb();
+    });
+  })
+  .catch(function(){setSyncUI('err','Napaka nalaganja');cb&&cb()});
 }
 
-function setSyncState(state,label){
-  const dot=document.getElementById('syncDot');
-  const lbl=document.getElementById('syncLbl');
-  if(dot)dot.className='sync-dot '+state;
-  if(lbl)lbl.textContent=label;
-}
-
-// ── AUTH ───────────────────────────────────────────────────────────────────
 function doLogin(){
-  const t=document.getElementById('tokenInput').value.trim();
+  var t=document.getElementById('tokenInput').value.trim();
   if(!t){alert('Vnesi token.');return;}
-  S.token=t;
-  bootApp();
-  driveLoad().then(()=>{renderAll();});
+  S.token=t;bootApp();
+  driveLoad(function(){renderAll();});
 }
 function doSkip(){bootApp();renderAll();}
+function doSync(){driveSave();}
+
 function bootApp(){
   document.getElementById('auth').style.display='none';
   document.getElementById('app').style.display='flex';
-  if(S.token){document.getElementById('syncBtn').style.display='';setSyncState('ok','Drive');}
-  else setSyncState('offline','Lokalno');
+  if(S.token){document.getElementById('syncRefBtn').style.display='';setSyncUI('ok','Drive');}
+  else setSyncUI('offline','Lokalno');
 }
 
-// ── BOOT ───────────────────────────────────────────────────────────────────
-(function(){
-  const d=ls();
-  if(d.token)S.token=d.token;
-  if(d.driveFileId)S.driveFileId=d.driveFileId;
-  if(d.podcasts){const m=[...d.podcasts];PODCASTS.forEach(p=>{if(!m.find(x=>x.id===p.id))m.push(p);});S.podcasts=m;}
-  if(d.episodes)S.episodes=d.episodes;
-  if(S.token){bootApp();driveLoad().then(()=>renderAll());}
-})();
-
-async function doSync(){await driveSave();}
-
-// ── MOBILE SIDEBAR ─────────────────────────────────────────────────────────
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('mobOverlay').style.display='block';}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mobOverlay').style.display='none';}
-
-// ── RENDER ─────────────────────────────────────────────────────────────────
-const LANGS=['ALL','SL','EN','DE','IT'];
-const LLAB={ALL:'Vsi',SL:'🇸🇮',EN:'🇺🇸',DE:'🇩🇪',IT:'🇮🇹'};
-
-function renderAll(){renderSidebar();renderLang();if(S.activePod)renderMain();}
-
-function renderLang(){
-  document.getElementById('langBar').innerHTML=LANGS.map(l=>`<button class="lang-chip ${S.lang===l?'active':''}" onclick="setLang('${l}')">${LLAB[l]} ${l!=='ALL'?l:''}</button>`).join('');
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').style.display='block';
 }
-function setLang(l){S.lang=l;renderLang();renderSidebar();}
-
-function renderSidebar(){
-  const q=(document.getElementById('podSearch')||{}).value||'';
-  const pods=S.podcasts.filter(p=>(S.lang==='ALL'||p.lang===S.lang)&&(!q||p.name.toLowerCase().includes(q.toLowerCase())));
-  document.getElementById('podList').innerHTML=pods.map(p=>{
-    const eps=S.episodes[p.id]||[];
-    const listened=eps.filter(e=>e.status==='listened').length;
-    const pct=eps.length?Math.round(listened/eps.length*100):0;
-    return `<div class="pod-item ${S.activePod===p.id?'active':''}" onclick="selectPod('${p.id}')">
-      <div class="pod-dot" style="background:${p.color}"></div>
-      <div class="pod-info">
-        <div class="pod-name">${p.name}</div>
-        <div class="pod-sub">${p.lang}${eps.length?` · ${listened}/${eps.length}`:''}</div>
-        ${eps.length?`<div class="pod-prog"><div class="pod-prog-bar" style="width:${pct}%"></div></div>`:''}
-      </div>
-      ${eps.length?`<span class="pod-count">${eps.length}</span>`:''}
-    </div>`;
-  }).join('');
-  document.getElementById('welcomeNum').textContent=S.podcasts.length;
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').style.display='none';
 }
 
-function selectPod(id){
-  S.activePod=id;S.filter='all';
-  renderSidebar();renderMain();
-  closeSidebar();
+var LANGS=['ALL','SL','EN','DE','IT'];
+var LLAB={ALL:'Vsi',SL:'🇸🇮',EN:'🇺🇸',DE:'🇩🇪',IT:'🇮🇹'};
+var STLBL={new:'Novo',queued:'V vrsti',studying:'Preučujem',listened:'Poslušano'};
+var STCOL={new:'#4a4642',queued:'#5b9bd5',studying:'#d4a843',listened:'#4caf7d'};
+var STBG={new:'rgba(74,70,66,0.2)',queued:'rgba(91,155,213,0.12)',studying:'rgba(212,168,67,0.12)',listened:'rgba(76,175,125,0.12)'};
+
+function renderAll(){renderLangs();renderPodList();document.getElementById('welcomeNum').textContent=S.podcasts.length;}
+
+function renderLangs(){
+  var h='';
+  LANGS.forEach(function(l){h+='<button class="lc'+(S.lang===l?' on':'')+'" onclick="setLang(\''+l+'\')">'+LLAB[l]+' '+(l!=='ALL'?l:'')+'</button>';});
+  document.getElementById('langBar').innerHTML=h;
+}
+function setLang(l){S.lang=l;renderLangs();renderPodList();}
+
+function renderPodList(){
+  var q=(document.getElementById('podSearch')||{}).value||'';
+  var pods=S.podcasts.filter(function(p){return(S.lang==='ALL'||p.lang===S.lang)&&(!q||p.name.toLowerCase().indexOf(q.toLowerCase())>=0)});
+  var h='';
+  pods.forEach(function(p){
+    var eps=S.episodes[p.id]||[];
+    var listened=eps.filter(function(e){return e.status==='listened'}).length;
+    var pct=eps.length?Math.round(listened/eps.length*100):0;
+    h+='<div class="pod-item'+(S.activePod===p.id?' on':'')+'" onclick="selectPod(\''+p.id+'\')">';
+    h+='<div class="pod-dot" style="background:'+p.color+'"></div>';
+    h+='<div class="pod-info"><div class="pod-name">'+p.name+'</div>';
+    h+='<div class="pod-sub">'+p.lang+(eps.length?' · '+listened+'/'+eps.length:'')+'</div>';
+    if(eps.length)h+='<div class="pod-bar"><div class="pod-bar-fill" style="width:'+pct+'%"></div></div>';
+    h+='</div>';
+    if(eps.length)h+='<span class="pod-cnt">'+eps.length+'</span>';
+    h+='</div>';
+  });
+  document.getElementById('podList').innerHTML=h||'<div style="padding:1rem;font-size:12px;color:#4a4642;text-align:center">Ni zadetkov</div>';
 }
 
-const fmtD=d=>{try{return new Date(d).toLocaleDateString('sl-SI',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d||''}};
-const STLBL={new:'Novo',queued:'V vrsti',studying:'Preučujem',listened:'Poslušano'};
-const STCOL={new:'#4a4642',queued:'#5b9bd5',studying:'#d4a843',listened:'#4caf7d'};
-const STBG={new:'rgba(74,70,66,0.15)',queued:'rgba(91,155,213,0.12)',studying:'rgba(212,168,67,0.12)',listened:'rgba(76,175,125,0.12)'};
+function selectPod(id){S.activePod=id;S.filter='all';renderPodList();renderMain();closeSidebar();}
 
 function renderMain(){
-  const pod=S.podcasts.find(p=>p.id===S.activePod);
+  var pod=S.podcasts.find(function(p){return p.id===S.activePod});
   if(!pod)return;
-  const allEps=S.episodes[S.activePod]||[];
-  const epSearch=(document.getElementById('epSearch')||{}).value||'';
-  const filtEps=allEps.filter(ep=>{
-    const mf=S.filter==='all'||(S.filter==='new'&&(!ep.status||ep.status==='new'))||ep.status===S.filter;
-    return mf&&(!epSearch||ep.title.toLowerCase().includes(epSearch.toLowerCase()));
+  var allEps=S.episodes[S.activePod]||[];
+  var epSrch='';
+  var filtEps=allEps.filter(function(ep){
+    var mf=S.filter==='all'||(S.filter==='new'&&(!ep.status||ep.status==='new'))||ep.status===S.filter;
+    return mf&&(!epSrch||ep.title.toLowerCase().indexOf(epSrch.toLowerCase())>=0);
   });
-  const isMob=window.innerWidth<=700;
-
-  document.getElementById('mainPane').innerHTML=`
-    <div class="main-header">
-      ${isMob?`<button class="mob-menu-btn" onclick="openSidebar()">☰</button>`:''}
-      <h2>${pod.name}</h2>
-      <div class="hdr-actions">
-        <button class="hdr-btn" onclick="openAddEpisode()">+ Ročno</button>
-        <button class="hdr-btn gold" id="fetchBtn" onclick="fetchEps('${pod.id}')" ${S.fetching===pod.id?'disabled':''}>
-          ${S.fetching===pod.id?'<span class="spinner"></span> Nalagam...':'✦ Naloži'}
-        </button>
-      </div>
-    </div>
-    <div class="stats-bar">
-      <div class="stat"><div class="stat-val">${allEps.length}</div><div class="stat-lbl">Skupaj</div></div>
-      <div class="stat"><div class="stat-val">${allEps.filter(e=>e.status==='listened').length}</div><div class="stat-lbl">Poslušano</div></div>
-      <div class="stat"><div class="stat-val">${allEps.filter(e=>e.status==='studying').length}</div><div class="stat-lbl">Preučujem</div></div>
-      <div class="stat"><div class="stat-val">${allEps.filter(e=>e.status==='queued').length}</div><div class="stat-lbl">V vrsti</div></div>
-    </div>
-    <div class="filters-bar">
-      ${['all','new','queued','studying','listened'].map(f=>`<button class="f-btn ${S.filter===f?'active':''}" onclick="setFilter('${f}')">${{all:'Vse',new:'Novo',queued:'V vrsti',studying:'Preučujem',listened:'Poslušano'}[f]}</button>`).join('')}
-      <input class="ep-search" id="epSearch" placeholder="Išči..." oninput="renderMain()" autocorrect="off">
-    </div>
-    <div class="ep-list">
-      ${filtEps.length===0
-        ? `<div class="empty">${allEps.length===0?'Klikni <strong>✦ Naloži</strong> za AI epizode<br>ali <strong>+ Ročno</strong> za ročni vnos.':'Ni epizod za ta filter.'}</div>`
-        : filtEps.map(ep=>{
-            const st=ep.status||'new';
-            return `<div class="ep-card ${st==='listened'?'listened':st==='studying'?'studying':st==='queued'?'queued':''}" onclick="openEpisode('${ep.id}','${S.activePod}')">
-              <div class="ep-top">
-                <div class="ep-title">${ep.title}</div>
-                <div class="ep-meta">${fmtD(ep.date)}${ep.duration?' · '+ep.duration:''}</div>
-              </div>
-              ${ep.summary?`<div class="ep-summary">${ep.summary}</div>`:`<div class="ep-summary" style="color:var(--text3);font-style:italic">Klikni za AI analizo...</div>`}
-              <div class="ep-foot">
-                ${(ep.tags||[]).slice(0,3).map(t=>`<span class="tag tag-gray">${t}</span>`).join('')}
-                ${(ep.userTags||[]).map(t=>`<span class="tag tag-blue">${t}</span>`).join('')}
-                ${ep.userNote?`<span class="tag tag-amber">📝</span>`:''}
-                ${ep.rating>0?`<span style="font-size:11px;color:var(--amber)">${'★'.repeat(ep.rating)}</span>`:''}
-                ${ep.listenedDate?`<span class="tag tag-green">✓ ${fmtD(ep.listenedDate)}</span>`:''}
-                <span class="st-pill" style="background:${STBG[st]};color:${STCOL[st]}">${STLBL[st]}</span>
-              </div>
-            </div>`;
-          }).join('')
-      }
-    </div>`;
+  var isMob=window.innerWidth<=680;
+  var h='';
+  h+='<div class="mh">';
+  if(isMob)h+='<button class="mob-btn" onclick="openSidebar()" style="display:flex">☰</button>';
+  h+='<h2>'+pod.name+'</h2>';
+  h+='<button class="hbtn" onclick="openAddEp()">+ Ročno</button>';
+  h+='<button class="hbtn gold" id="fetchBtn" onclick="fetchEps(\''+pod.id+'\')"'+(S.fetching===pod.id?' disabled':'')+'>'+
+    (S.fetching===pod.id?'<span class="spinner"></span> Nalagam...':'✦ Naloži')+'</button>';
+  h+='</div>';
+  h+='<div class="stats">';
+  h+='<div class="stat"><div class="stat-val">'+allEps.length+'</div><div class="stat-lbl">Skupaj</div></div>';
+  h+='<div class="stat"><div class="stat-val">'+allEps.filter(function(e){return e.status==='listened'}).length+'</div><div class="stat-lbl">Poslušano</div></div>';
+  h+='<div class="stat"><div class="stat-val">'+allEps.filter(function(e){return e.status==='studying'}).length+'</div><div class="stat-lbl">Preučujem</div></div>';
+  h+='<div class="stat"><div class="stat-val">'+allEps.filter(function(e){return e.status==='queued'}).length+'</div><div class="stat-lbl">V vrsti</div></div>';
+  h+='</div>';
+  h+='<div class="fbar">';
+  var filters=[['all','Vse'],['new','Novo'],['queued','V vrsti'],['studying','Preučujem'],['listened','Poslušano']];
+  filters.forEach(function(f){h+='<button class="fbtn'+(S.filter===f[0]?' on':'')+'" onclick="setFilter(\''+f[0]+'\')">'+f[1]+'</button>';});
+  h+='<input class="ep-search" placeholder="Išči..." oninput="filterEps(this.value)" autocorrect="off">';
+  h+='</div>';
+  h+='<div class="ep-list" id="epListDiv">';
+  if(filtEps.length===0){
+    h+='<div class="empty">'+(allEps.length===0?'Klikni <strong>✦ Naloži</strong> za AI epizode<br>ali <strong>+ Ročno</strong> za ročni vnos.':'Ni epizod za ta filter.')+'</div>';
+  } else {
+    filtEps.forEach(function(ep){
+      var st=ep.status||'new';
+      var bl=st!=='new'?'border-left:3px solid '+STCOL[st]+';':'';
+      h+='<div class="ep-card '+(st==='listened'?'listened':st==='studying'?'studying':st==='queued'?'queued':'')+'" style="'+bl+'" onclick="openEp(\''+ep.id+'\',\''+S.activePod+'\')">';
+      h+='<div class="ep-top"><div class="ep-title">'+ep.title+'</div>';
+      h+='<div class="ep-date">'+fmtD(ep.date)+(ep.duration?' · '+ep.duration:'')+'</div></div>';
+      if(ep.summary)h+='<div class="ep-sum">'+ep.summary+'</div>';
+      else h+='<div class="ep-sum" style="color:#3a3632;font-style:italic">Klikni za AI analizo...</div>';
+      h+='<div class="ep-foot">';
+      (ep.tags||[]).slice(0,3).forEach(function(t){h+='<span class="tag">'+t+'</span>';});
+      (ep.userTags||[]).forEach(function(t){h+='<span class="tag tag-blue">'+t+'</span>';});
+      if(ep.userNote)h+='<span class="tag tag-amber">📝</span>';
+      if(ep.rating>0)h+='<span style="font-size:11px;color:#d4a843">'+'★'.repeat(ep.rating)+'</span>';
+      if(ep.listenedDate)h+='<span class="tag tag-green">✓ '+fmtD(ep.listenedDate)+'</span>';
+      h+='<span class="st-pill" style="background:'+STBG[st]+';color:'+STCOL[st]+'">'+STLBL[st]+'</span>';
+      h+='</div></div>';
+    });
+  }
+  h+='</div>';
+  document.getElementById('mainArea').innerHTML=h;
 }
 
 function setFilter(f){S.filter=f;renderMain();}
-
-// ── FETCH EPISODES ──────────────────────────────────────────────────────────
-async function fetchEps(podId){
-  const pod=S.podcasts.find(p=>p.id===podId);if(!pod)return;
-  S.fetching=podId;renderMain();
-  try{
-    const txt=await claude(`Ustvari 8 realističnih epizod podcasta "${pod.name}" (${pod.lang}).
-Vrni SAMO JSON array brez \`\`\`json:
-[{"id":"x","title":"Naslov epizode","date":"YYYY-MM-DD","summary":"Kratek povzetek v slovenščini","tip":"Praktičen nasvet v slovenščini","tags":["tag1","tag2"],"duration":"Xh Ym","status":"new","insights":[],"rating":0,"userNote":"","userTags":[],"listenedDate":""}]
-Vrni točno 8 epizod.`);
-    const newEps=JSON.parse(txt.replace(/```json|```/g,'').trim());
-    const ts=Date.now();
-    if(!S.episodes[podId])S.episodes[podId]=[];
-    S.episodes[podId]=[...S.episodes[podId],...newEps.map((e,i)=>({...e,id:`${podId}-${ts}-${i}`}))];
-    ss();driveSave();
-  } catch(e){alert('Napaka: '+e.message);}
-  S.fetching=null;renderMain();renderSidebar();
+function filterEps(v){
+  var epListDiv=document.getElementById('epListDiv');
+  if(!epListDiv)return;
+  var pod=S.podcasts.find(function(p){return p.id===S.activePod});
+  if(!pod)return;
+  var allEps=S.episodes[S.activePod]||[];
+  var filtEps=allEps.filter(function(ep){
+    var mf=S.filter==='all'||(S.filter==='new'&&(!ep.status||ep.status==='new'))||ep.status===S.filter;
+    return mf&&(!v||ep.title.toLowerCase().indexOf(v.toLowerCase())>=0);
+  });
+  var h='';
+  if(filtEps.length===0){h='<div class="empty">Ni epizod za ta filter.</div>';}
+  else{filtEps.forEach(function(ep){
+    var st=ep.status||'new';
+    h+='<div class="ep-card" onclick="openEp(\''+ep.id+'\',\''+S.activePod+'\')" style="border-left:'+(st!=='new'?'3px solid '+STCOL[st]:'1px solid rgba(255,255,255,0.07)')+'">';
+    h+='<div class="ep-top"><div class="ep-title">'+ep.title+'</div><div class="ep-date">'+fmtD(ep.date)+'</div></div>';
+    if(ep.summary)h+='<div class="ep-sum">'+ep.summary+'</div>';
+    h+='<div class="ep-foot"><span class="st-pill" style="background:'+STBG[st]+';color:'+STCOL[st]+';margin-left:auto">'+STLBL[st]+'</span></div>';
+    h+='</div>';
+  });}
+  epListDiv.innerHTML=h;
 }
 
-// ── EPISODE MODAL ───────────────────────────────────────────────────────────
-function openEpisode(epId,podId){
-  const eps=S.episodes[podId]||[];
-  const ep=eps.find(e=>e.id===epId);
-  const pod=S.podcasts.find(p=>p.id===podId);
+function fetchEps(podId){
+  var pod=S.podcasts.find(function(p){return p.id===podId});
+  if(!pod)return;
+  S.fetching=podId;renderMain();
+  claude('Ustvari 8 realističnih epizod podcasta "'+pod.name+'" ('+pod.lang+').\nVrni SAMO JSON array brez ```json:\n[{"id":"tmp","title":"Naslov","date":"YYYY-MM-DD","summary":"Povzetek v slovenščini","tip":"Nasvet v slovenščini","tags":["tag1","tag2"],"duration":"Xh Ym","status":"new","insights":[],"rating":0,"userNote":"","userTags":[],"listenedDate":""}]\nVrni točno 8 epizod.',
+  function(err,txt){
+    if(!err&&txt){
+      try{
+        var newEps=JSON.parse(txt.replace(/```json|```/g,'').trim());
+        var ts=Date.now();
+        if(!S.episodes[podId])S.episodes[podId]=[];
+        newEps.forEach(function(e,i){S.episodes[podId].push(Object.assign({},e,{id:podId+'-'+ts+'-'+i}));});
+        lsSave();driveSave();
+      }catch(e){alert('Napaka parsiranja: '+e.message);}
+    } else {alert('Napaka: '+err);}
+    S.fetching=null;renderMain();renderPodList();
+  });
+}
+
+function openEp(epId,podId){
+  var eps=S.episodes[podId]||[];
+  var ep=eps.find(function(e){return e.id===epId});
+  var pod=S.podcasts.find(function(p){return p.id===podId});
   if(!ep)return;
-  let rating=ep.rating||0;
-
-  document.getElementById('modalRoot').innerHTML=`
-  <div class="modal-overlay" onclick="closeModalOverlay(event)">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-info">
-        <div class="modal-meta">${fmtD(ep.date)}${ep.duration?' · '+ep.duration:''} · ${STLBL[ep.status||'new']}</div>
-        <div class="modal-title">${ep.title}</div>
-      </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="ai-box">
-        <div class="ai-box-head"><span class="gold">✦</span> AI Povzetek</div>
-        <div class="ai-box-text" id="aiSum">${ep.summary||'<span style="color:var(--text3);font-style:italic">Klikni "✦ AI analiza" spodaj</span>'}</div>
-        ${ep.insights&&ep.insights.length?`<ul style="margin-top:10px;padding-left:1.2rem">${ep.insights.map(i=>`<li style="font-size:12px;color:var(--text);margin-bottom:3px">${i}</li>`).join('')}</ul>`:''}
-      </div>
-      <div class="tip-box">
-        <div class="ai-box-head">💡 Kako uporabiti v življenju</div>
-        <div class="ai-box-text" id="aiTip">${ep.tip?`<strong style="color:var(--text)">Jutri:</strong> ${ep.tip}`:'<span style="color:var(--text3);font-style:italic">Klikni "✦ AI analiza" spodaj</span>'}</div>
-      </div>
-      <div id="aiErr"></div>
-      <div class="sep"></div>
-      <div class="field"><label>📅 Datum poslušanja</label><input type="date" id="eListenDate" value="${ep.listenedDate||''}"></div>
-      <div class="field"><label>📝 Moji zapiski</label><textarea id="eNote" placeholder="Misli, uvidi, ideje...">${ep.userNote||''}</textarea></div>
-      <div class="field"><label>🏷 Moje oznake (z vejico)</label><input type="text" id="eTags" value="${(ep.userTags||[]).join(', ')}" placeholder="implementiram, ideja, ponovi"></div>
-      <div class="field"><label>Ocena</label>
-        <div class="stars" id="starRow">
-          ${[1,2,3,4,5].map(i=>`<span class="star ${rating>=i?'on':''}" onclick="setStars(${i})"">★</span>`).join('')}
-        </div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="saveEp('${epId}','${podId}','queued')">📋 V vrsto</button>
-      <button class="btn" onclick="saveEp('${epId}','${podId}','studying')">📖 Preučujem</button>
-      <button class="btn primary" onclick="saveEp('${epId}','${podId}','listened')">✓ Poslušano</button>
-      <button class="btn ai" id="aiBtn" onclick="genAI('${epId}','${podId}')">✦ AI analiza</button>
-      <button class="btn danger" onclick="saveEp('${epId}','${podId}','new')">↺ Ponastavi</button>
-    </div>
-  </div></div>`;
-
-  window._epRating=ep.rating||0;
+  S.rating=ep.rating||0;
+  var ST={new:'Novo',queued:'V vrsti',studying:'Preučujem',listened:'Poslušano'};
+  var h='<div class="modal-bg" onclick="closeMIfBg(event)">';
+  h+='<div class="modal" onclick="event.stopPropagation()">';
+  h+='<div class="modal-head"><div style="flex:1;min-width:0"><div class="modal-meta">'+fmtD(ep.date)+(ep.duration?' · '+ep.duration:'')+' · '+ST[ep.status||'new']+'</div>';
+  h+='<div class="modal-title">'+ep.title+'</div></div>';
+  h+='<button class="mclose" onclick="closeModal()">✕</button></div>';
+  h+='<div class="modal-body">';
+  h+='<div class="abox"><div class="abox-head"><span style="color:#c8a96e">✦</span> AI Povzetek</div>';
+  h+='<div class="abox-text" id="aiSum">'+(ep.summary||'<span style="color:#3a3632;font-style:italic">Klikni "✦ AI analiza" spodaj</span>')+'</div></div>';
+  h+='<div class="tip-box"><div class="tip-head">💡 Kako uporabiti v življenju</div>';
+  h+='<div class="abox-text" id="aiTip">'+(ep.tip?'<strong style="color:#f0ede8">Jutri:</strong> '+ep.tip:'<span style="color:#3a3632;font-style:italic">Klikni "✦ AI analiza" spodaj</span>')+'</div></div>';
+  h+='<div id="aiErr"></div>';
+  h+='<div class="sep"></div>';
+  h+='<div class="field"><label>📅 Datum poslušanja</label><input type="date" id="eDate" value="'+(ep.listenedDate||'')+'"></div>';
+  h+='<div class="field"><label>📝 Moji zapiski</label><textarea id="eNote" placeholder="Misli, uvidi, ideje...">'+((ep.userNote||''))+'</textarea></div>';
+  h+='<div class="field"><label>🏷 Moje oznake (z vejico)</label><input type="text" id="eTags" value="'+((ep.userTags||[]).join(', '))+'" placeholder="implementiram, ideja"></div>';
+  h+='<div class="field"><label>Ocena</label><div class="stars" id="starRow">';
+  for(var i=1;i<=5;i++)h+='<span class="star'+(S.rating>=i?' on':'')+'" onclick="setStars('+i+')">★</span>';
+  h+='</div></div></div>';
+  h+='<div class="modal-acts">';
+  h+='<button class="btn" onclick="saveEp(\''+epId+'\',\''+podId+'\',\'queued\')">📋 V vrsto</button>';
+  h+='<button class="btn" onclick="saveEp(\''+epId+'\',\''+podId+'\',\'studying\')">📖 Preučujem</button>';
+  h+='<button class="btn primary" onclick="saveEp(\''+epId+'\',\''+podId+'\',\'listened\')">✓ Poslušano</button>';
+  h+='<button class="btn ai" id="aibtn" onclick="genAI(\''+epId+'\',\''+podId+'\')">✦ AI analiza</button>';
+  h+='<button class="btn danger" onclick="saveEp(\''+epId+'\',\''+podId+'\',\'new\')">↺ Ponastavi</button>';
+  h+='</div></div></div>';
+  document.getElementById('modalRoot').innerHTML=h;
 }
 
 function setStars(n){
-  window._epRating=n;
-  document.querySelectorAll('#starRow .star').forEach((s,i)=>{s.className='star'+(i<n?' on':'');});
+  S.rating=n;
+  var stars=document.querySelectorAll('#starRow .star');
+  for(var i=0;i<stars.length;i++)stars[i].className='star'+(i<n?' on':'');
 }
 
 function saveEp(epId,podId,status){
-  const eps=S.episodes[podId]||[];
-  const ep=eps.find(e=>e.id===epId);
+  var eps=S.episodes[podId]||[];
+  var ep=eps.find(function(e){return e.id===epId});
   if(!ep)return;
-  const ld=document.getElementById('eListenDate');
-  const nEl=document.getElementById('eNote');
-  const tEl=document.getElementById('eTags');
-  if(nEl)ep.userNote=nEl.value;
-  if(tEl)ep.userTags=tEl.value.split(',').map(t=>t.trim()).filter(Boolean);
-  if(ld&&ld.value)ep.listenedDate=ld.value;
+  var nd=document.getElementById('eDate');
+  var nn=document.getElementById('eNote');
+  var nt=document.getElementById('eTags');
+  if(nd&&nd.value)ep.listenedDate=nd.value;
   if(status==='listened'&&!ep.listenedDate)ep.listenedDate=new Date().toISOString().split('T')[0];
-  ep.status=status;
-  ep.rating=window._epRating||0;
-  const sumEl=document.getElementById('aiSum');
-  const tipEl=document.getElementById('aiTip');
-  if(sumEl&&sumEl.dataset.updated)ep.summary=sumEl.dataset.val||ep.summary;
-  if(tipEl&&tipEl.dataset.updated)ep.tip=tipEl.dataset.val||ep.tip;
-  ss();driveSave();closeModal();renderMain();renderSidebar();
+  if(nn)ep.userNote=nn.value;
+  if(nt)ep.userTags=nt.value.split(',').map(function(t){return t.trim()}).filter(Boolean);
+  ep.status=status;ep.rating=S.rating;
+  lsSave();driveSave();closeModal();renderMain();renderPodList();
 }
 
-async function genAI(epId,podId){
-  const btn=document.getElementById('aiBtn');
+function genAI(epId,podId){
+  var btn=document.getElementById('aibtn');
   if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generiram...';}
-  const eps=S.episodes[podId]||[];
-  const ep=eps.find(e=>e.id===epId);
-  const pod=S.podcasts.find(p=>p.id===podId);
-  const note=(document.getElementById('eNote')||{}).value||'';
-  const errEl=document.getElementById('aiErr');
-  try{
-    const txt=await claude(`Analiziraj podcast epizodo. Vrni SAMO JSON brez \`\`\`json:
-{"summary":"Povzetek v slovenščini 3-4 stavki","tip":"Konkreten praktičen nasvet za jutri – v slovenščini","insights":["uvid1","uvid2","uvid3"],"tags":["tag1","tag2","tag3"]}
-Podcast: ${pod.name} (${pod.lang})
-Epizoda: ${ep.title}
-Moji zapiski: ${note||'ni'}`);
-    const p=JSON.parse(txt.replace(/```json|```/g,'').trim());
-    const sumEl=document.getElementById('aiSum');
-    const tipEl=document.getElementById('aiTip');
-    if(sumEl&&p.summary){
-      sumEl.innerHTML=p.summary+(p.insights&&p.insights.length?`<ul style="margin-top:10px;padding-left:1.2rem">${p.insights.map(i=>`<li style="font-size:12px;color:var(--text);margin-bottom:3px">${i}</li>`).join('')}</ul>`:'');
-      sumEl.dataset.updated='1';sumEl.dataset.val=p.summary;
-    }
-    if(tipEl&&p.tip){tipEl.innerHTML=`<strong style="color:var(--text)">Jutri:</strong> ${p.tip}`;tipEl.dataset.updated='1';tipEl.dataset.val=p.tip;}
-    if(p.summary)ep.summary=p.summary;
-    if(p.tip)ep.tip=p.tip;
-    if(p.insights)ep.insights=p.insights;
-    if(p.tags)ep.tags=p.tags;
-    ss();driveSave();
-  } catch(e){if(errEl)errEl.innerHTML=`<div class="err-box">Napaka: ${e.message}</div>`;}
-  if(btn){btn.disabled=false;btn.innerHTML='✦ Regeneriraj';}
+  var eps=S.episodes[podId]||[];
+  var ep=eps.find(function(e){return e.id===epId});
+  var pod=S.podcasts.find(function(p){return p.id===podId});
+  var note=(document.getElementById('eNote')||{}).value||'';
+  claude('Analiziraj podcast epizodo. Vrni SAMO JSON brez ```json:\n{"summary":"Povzetek v slovenščini 3-4 stavki","tip":"Konkreten nasvet za jutri v slovenščini","insights":["uvid1","uvid2","uvid3"],"tags":["tag1","tag2","tag3"]}\nPodcast: '+pod.name+' ('+pod.lang+')\nEpizoda: '+ep.title+'\nZapiski: '+(note||'ni'),
+  function(err,txt){
+    if(!err&&txt){
+      try{
+        var p=JSON.parse(txt.replace(/```json|```/g,'').trim());
+        var sumEl=document.getElementById('aiSum');
+        var tipEl=document.getElementById('aiTip');
+        if(sumEl&&p.summary){
+          var ins='';
+          if(p.insights&&p.insights.length){ins='<ul style="margin-top:8px;padding-left:1.2rem">';p.insights.forEach(function(i){ins+='<li style="font-size:12px;color:#f0ede8;margin-bottom:3px">'+i+'</li>';});ins+='</ul>';}
+          sumEl.innerHTML=p.summary+ins;
+        }
+        if(tipEl&&p.tip)tipEl.innerHTML='<strong style="color:#f0ede8">Jutri:</strong> '+p.tip;
+        if(p.summary)ep.summary=p.summary;
+        if(p.tip)ep.tip=p.tip;
+        if(p.insights)ep.insights=p.insights;
+        if(p.tags)ep.tags=p.tags;
+        lsSave();driveSave();
+      }catch(e){var er=document.getElementById('aiErr');if(er)er.innerHTML='<div class="err">Napaka parsiranja.</div>';}
+    } else {var er=document.getElementById('aiErr');if(er)er.innerHTML='<div class="err">Napaka: '+err+'</div>';}
+    if(btn){btn.disabled=false;btn.innerHTML='✦ Regeneriraj';}
+  });
 }
 
 function closeModal(){document.getElementById('modalRoot').innerHTML='';}
-function closeModalOverlay(e){if(e.target===e.currentTarget)closeModal();}
+function closeMIfBg(e){if(e.target===e.currentTarget)closeModal();}
 
-// ── ADD EPISODE MODAL ───────────────────────────────────────────────────────
-function openAddEpisode(){
-  document.getElementById('modalRoot').innerHTML=`
-  <div class="modal-overlay" onclick="closeModalOverlay(event)">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-info"><div class="modal-meta">Ročni vnos</div><div class="modal-title">Dodaj epizodo</div></div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="field"><label>Naslov *</label><input type="text" id="nTitle" placeholder="Naziv epizode"></div>
-      <div class="field"><label>Datum epizode</label><input type="date" id="nDate"></div>
-      <div class="field"><label>Trajanje</label><input type="text" id="nDur" placeholder="1h 30m"></div>
-      <div class="field"><label>Datum poslušanja (Apple Podcasts)</label><input type="date" id="nListened"></div>
-      <div class="field"><label>Status</label>
-        <select id="nStatus">
-          <option value="new">Novo</option>
-          <option value="queued">V vrsti</option>
-          <option value="studying">Preučujem</option>
-          <option value="listened">Poslušano</option>
-        </select>
-      </div>
-      <div class="field"><label>Oznake (z vejico)</label><input type="text" id="nTags" placeholder="motivacija, zdravje"></div>
-      <div class="field"><label>Zapisk</label><textarea id="nNote" placeholder="Misli..."></textarea></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn primary" onclick="saveManualEp()">Shrani</button>
-      <button class="btn" onclick="closeModal()">Prekliči</button>
-    </div>
-  </div></div>`;
+function openAddEp(){
+  var h='<div class="modal-bg" onclick="closeMIfBg(event)"><div class="modal" onclick="event.stopPropagation()">';
+  h+='<div class="modal-head"><div style="flex:1"><div class="modal-meta">Ročni vnos</div><div class="modal-title">Dodaj epizodo</div></div><button class="mclose" onclick="closeModal()">✕</button></div>';
+  h+='<div class="modal-body" style="display:flex;flex-direction:column;gap:11px">';
+  h+='<div class="field"><label>Naslov *</label><input type="text" id="nTitle" placeholder="Naziv epizode"></div>';
+  h+='<div class="field"><label>Datum epizode</label><input type="date" id="nDate"></div>';
+  h+='<div class="field"><label>Trajanje</label><input type="text" id="nDur" placeholder="1h 30m"></div>';
+  h+='<div class="field"><label>Datum poslušanja</label><input type="date" id="nListened"></div>';
+  h+='<div class="field"><label>Status</label><select id="nStatus"><option value="new">Novo</option><option value="queued">V vrsti</option><option value="studying">Preučujem</option><option value="listened">Poslušano</option></select></div>';
+  h+='<div class="field"><label>Oznake (z vejico)</label><input type="text" id="nTags" placeholder="motivacija, zdravje"></div>';
+  h+='<div class="field"><label>Zapisk</label><textarea id="nNote" placeholder="Misli..."></textarea></div>';
+  h+='</div><div class="modal-acts"><button class="btn primary" onclick="saveNewEp()">Shrani</button><button class="btn" onclick="closeModal()">Prekliči</button></div>';
+  h+='</div></div>';
+  document.getElementById('modalRoot').innerHTML=h;
 }
 
-function saveManualEp(){
-  const title=(document.getElementById('nTitle')||{}).value||'';
-  if(!title.trim()){alert('Vnesi naslov.');return;}
-  const ep={
-    id:S.activePod+'-manual-'+Date.now(),
-    title:title.trim(),
+function saveNewEp(){
+  var t=(document.getElementById('nTitle')||{}).value||'';
+  if(!t.trim()){alert('Vnesi naslov.');return;}
+  var ep={id:S.activePod+'-manual-'+Date.now(),title:t.trim(),
     date:(document.getElementById('nDate')||{}).value||'',
     duration:(document.getElementById('nDur')||{}).value||'',
     listenedDate:(document.getElementById('nListened')||{}).value||'',
     status:(document.getElementById('nStatus')||{}).value||'new',
-    userTags:((document.getElementById('nTags')||{}).value||'').split(',').map(t=>t.trim()).filter(Boolean),
+    userTags:((document.getElementById('nTags')||{}).value||'').split(',').map(function(t){return t.trim()}).filter(Boolean),
     userNote:(document.getElementById('nNote')||{}).value||'',
-    summary:'',tip:'',tags:[],rating:0,insights:[]
-  };
+    summary:'',tip:'',tags:[],rating:0,insights:[]};
   if(!S.episodes[S.activePod])S.episodes[S.activePod]=[];
   S.episodes[S.activePod].unshift(ep);
-  ss();driveSave();closeModal();renderMain();renderSidebar();
+  lsSave();driveSave();closeModal();renderMain();renderPodList();
 }
 
-// ── ADD PODCAST MODAL ───────────────────────────────────────────────────────
-let _selLang='EN';
-function openAddPodcast(){
-  const LANGS2=['SL','EN','DE','IT','OTHER'];
-  const LNAMES={SL:'🇸🇮 Slovenščina',EN:'🇺🇸 Angleščina',DE:'🇩🇪 Nemščina',IT:'🇮🇹 Italijanščina',OTHER:'Drugo'};
-  document.getElementById('modalRoot').innerHTML=`
-  <div class="modal-overlay" onclick="closeModalOverlay(event)">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-info"><div class="modal-meta">Nov podcast</div><div class="modal-title">Dodaj podcast</div></div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="field"><label>Ime podcasta *</label><input type="text" id="apName" placeholder="npr. Lex Fridman Podcast"></div>
-      <div class="field"><label>Jezik</label>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:4px">
-          ${LANGS2.map(l=>`<button onclick="selLang('${l}')" id="ll_${l}" style="padding:9px;border-radius:7px;border:1px solid ${l===_selLang?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.08)'};background:${l===_selLang?'var(--bg3)':'transparent'};color:${l===_selLang?'var(--text)':'var(--text3)'};font-size:13px;cursor:pointer">${LNAMES[l]}</button>`).join('')}
-        </div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn primary" onclick="saveNewPod()">Dodaj</button>
-      <button class="btn" onclick="closeModal()">Prekliči</button>
-    </div>
-  </div></div>`;
+function openAddPod(){
+  var LNAMES={SL:'🇸🇮 Slovenščina',EN:'🇺🇸 Angleščina',DE:'🇩🇪 Nemščina',IT:'🇮🇹 Italijanščina',OTHER:'Drugo'};
+  var selL='EN';
+  var h='<div class="modal-bg" onclick="closeMIfBg(event)"><div class="modal" onclick="event.stopPropagation()" style="max-width:380px">';
+  h+='<div class="modal-head"><div style="flex:1"><div class="modal-meta">Nov podcast</div><div class="modal-title">Dodaj podcast</div></div><button class="mclose" onclick="closeModal()">✕</button></div>';
+  h+='<div class="modal-body">';
+  h+='<div class="field"><label>Ime podcasta *</label><input type="text" id="apName" placeholder="npr. Lex Fridman Podcast"></div>';
+  h+='<div class="field"><label>Jezik</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px" id="langGrid">';
+  ['SL','EN','DE','IT','OTHER'].forEach(function(l){
+    h+='<button id="ll_'+l+'" onclick="selPodLang(\''+l+'\')" style="padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,'+(l===selL?'0.13':'0.07')+');background:'+(l===selL?'#1e1e1e':'transparent')+';color:'+(l===selL?'#f0ede8':'#4a4642')+';font-size:13px;cursor:pointer">'+LNAMES[l]+'</button>';
+  });
+  h+='</div></div></div>';
+  h+='<div class="modal-acts"><button class="btn primary" onclick="saveNewPod()">Dodaj</button><button class="btn" onclick="closeModal()">Prekliči</button></div>';
+  h+='</div></div>';
+  document.getElementById('modalRoot').innerHTML=h;
+  window._selPodLang='EN';
 }
 
-function selLang(l){
-  _selLang=l;
-  document.querySelectorAll('[id^="ll_"]').forEach(b=>{
-    const isMe=b.id==='ll_'+l;
-    b.style.border=`1px solid ${isMe?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.08)'}`;
-    b.style.background=isMe?'var(--bg3)':'transparent';
-    b.style.color=isMe?'var(--text)':'var(--text3)';
+function selPodLang(l){
+  window._selPodLang=l;
+  ['SL','EN','DE','IT','OTHER'].forEach(function(x){
+    var b=document.getElementById('ll_'+x);
+    if(!b)return;
+    b.style.border='1px solid rgba(255,255,255,'+(x===l?'0.13':'0.07')+')';
+    b.style.background=x===l?'#1e1e1e':'transparent';
+    b.style.color=x===l?'#f0ede8':'#4a4642';
   });
 }
 
 function saveNewPod(){
-  const name=(document.getElementById('apName')||{}).value||'';
+  var name=(document.getElementById('apName')||{}).value||'';
   if(!name.trim()){alert('Vnesi ime.');return;}
-  const cols=['#4caf7d','#5b9bd5','#c8a96e','#d4a843','#d45b5b','#a067c8'];
-  const pod={id:'custom_'+Date.now(),name:name.trim(),lang:_selLang==='OTHER'?'EN':_selLang,color:cols[Math.floor(Math.random()*cols.length)]};
-  S.podcasts.push(pod);
-  ss();driveSave();closeModal();
-  S.activePod=pod.id;renderSidebar();renderMain();
+  var cols=['#4caf7d','#5b9bd5','#c8a96e','#d4a843','#d45b5b','#a067c8'];
+  var pod={id:'custom_'+Date.now(),name:name.trim(),lang:(window._selPodLang||'EN')==='OTHER'?'EN':(window._selPodLang||'EN'),color:cols[Math.floor(Math.random()*cols.length)]};
+  S.podcasts.push(pod);lsSave();driveSave();closeModal();
+  S.activePod=pod.id;renderPodList();renderMain();document.getElementById('welcomeNum').textContent=S.podcasts.length;
 }
+
+// BOOT
+(function(){
+  var d=lsGet();
+  if(d.token)S.token=d.token;
+  if(d.driveFileId)S.driveFileId=d.driveFileId;
+  if(d.podcasts){var m=d.podcasts.slice();PODCASTS.forEach(function(p){if(!m.find(function(x){return x.id===p.id}))m.push(p)});S.podcasts=m;}
+  if(d.episodes)S.episodes=d.episodes;
+  if(S.token){bootApp();driveLoad(function(){renderAll();});}
+})();
 </script>
 </body>
 </html>
